@@ -147,7 +147,7 @@ paths:
           in: path
           description: The user identifier 
           required: true
-          schema: { $ref: '#/components/schemas/User/properties/userId' }
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
       requestBody:
         description: Set the username
         content:
@@ -197,7 +197,7 @@ paths:
           in: path
           description: The userID of who is uploading the photo
           required: true
-          schema: { $ref: '#/components/schemas/User/properties/userId' }
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
       requestBody:
         required: true
         content:
@@ -225,7 +225,7 @@ paths:
           in: path
           description: The ID of the user deleting the photo
           required: true
-          schema: { $ref: '#/components/schemas/User/properties/userId'}
+          schema: { $ref: '#/components/schemas/User/properties/userID'}
         - name: photoID
           in: query
           description: The ID of the photo being deleted
