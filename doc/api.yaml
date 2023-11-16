@@ -477,6 +477,10 @@ paths:
       description: |
         Each user will be presented with a stream of photos (images) in reverse chronological order, with information about when each photo was uploaded and how many likes and comments it has. The stream is composed by photos from following list of the user.
       parameters:
+        - name: user
+          in: query
+          required: true
+          schema: { $ref : '#/components/schemas/User' }
         - name: time
           in: query
           description: The time at which the stream is requested
@@ -484,11 +488,6 @@ paths:
           schema:
             type: string
             format: date-time
-      requestBody:
-        description: Get the stream for a specific user
-        content:
-          application/json:
-            schema: { $ref : '#/components/schemas/User' }
       responses:
         "200":
           description: Stream succesfully returned
