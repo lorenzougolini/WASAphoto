@@ -6,7 +6,12 @@ info:
     upload your photos directly from your PC, and they will be visible to everyone following you.
   version: 0.0.1
 
-components: 
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    
   schemas:
     User:
       title: User
@@ -19,7 +24,9 @@ components:
           example: 1
           readOnly: true
         username:
-          description: The username chosen by the user
+          description: |
+            Each user has its own unique username, used to log-in. The username is chosen by the user and it's visiblr by everyone.
+            The username is what is used to search for other users.
           type: string
           example: Maria
           pattern: '^.*?$'
@@ -76,30 +83,58 @@ components:
         likes:
           description: The list of users who liked a photo
           type: array
-          items: { $ref: '#/components/schemas/User/properties/username' }
+          items: { $ref: '#/components/schemas/Like' }
         comments:
           description: The list of users who commented a photo along with their comment
           type: array
           items: { $ref: '#/components/schemas/Comment' }
 
+    Like:
+      title: Like
+      description: This schema represents a like added to a photo
+      type: object
+      properties:
+        username: 
+          $ref: '#/components/schemas/User/properties/username'
+        photoId:
+          description: The identifier of the image
+          type: string
+          example: 'Cw34f'
+          readOnly: true
+        dateAndTime:
+          description: The date and time at which the like was left
+          type: string
+          format: date-time
+          example: "2017-07-21T17:32:28Z"
+          readOnly: true
+
     Comment:
       title: Comment
-      description: This schema represents a comment with its data
+      description: This schema represents a comment added to a photo with its data
       type: object
       properties:
         username:
           $ref: '#/components/schemas/User/properties/username'
-        comment:
+        photoId:
+          description: The identifier of the image
+          type: string
+          example: 'Cw34f'
+          readOnly: true
+        commentText:
           description: The text of the comment
           type: string
           example: "Nice photo!"
+          minLength: 1
+          maxLength: 100
         dateAndTime:
           description: The date and huors when the comment was left
           type: string
           format: date-time
           example: "2017-07-21T17:32:28Z"
           readOnly: true
-        
+
+security:
+  - bearerAuth: []
 
 tags:
   - name: Login
@@ -162,6 +197,8 @@ paths:
               schema: { $ref: '#/components/schemas/User' }
         "400":
           description: Invalid username provided
+        "401":
+          description: The user is non correctly authenticated
 
     get:
       tags: ["Social"]
@@ -209,6 +246,8 @@ paths:
           content:
            application/json:
              schema: { $ref: "#/components/schemas/Photo" }
+        "401":
+          description: The user is non correctly authenticated
         "415":
           description: The uploaded photo is of the wrong format
           content:
@@ -235,7 +274,9 @@ paths:
         "200": 
           description: Photo succesfully deleted
         "401":
-          description: The user is not authorized to delete the photo
+          description: The user is non correctly authenticated
+        "403":
+          description: The user is not authorized to delete the photo 
   
   /users/{userID}/followers/:
     put:
@@ -263,6 +304,8 @@ paths:
               schema: { $ref: '#/components/schemas/User' }
         "400":
           description: Invalid username provided
+        "401":
+          description: The user is non correctly authenticated
         "404":
           description: Username not found
           
@@ -270,7 +313,7 @@ paths:
       tags: ["Social"]
       operationID: unfollowUser
       summary: Unfollow anothe user
-      decsription: |
+      description: |
         This method takes an username inside the list of the followed ones and removes it from the list
       parameters:
         - name: userID
@@ -291,6 +334,8 @@ paths:
               schema: { $ref: '#/components/schemas/User' }
         "400":
           description: Invalid username provided
+        "401":
+          description: The user is non correctly authenticated
         "404":
           description: Username not found in the followed list
 
@@ -324,6 +369,8 @@ paths:
           description: The user is succesfully banned and added to a blacklist
         "400":
           description: Invalid username to ban provided
+        "401":
+          description: The user is non correctly authenticated
         "404":
           description: Username to ban not found
 
@@ -350,6 +397,8 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/User' }
+        "401":
+          description: The user is non correctly authenticated
         "404":
           description: Username is not found inside the blacklist
 
@@ -366,17 +415,26 @@ paths:
           description: The ID of the liked photo
           required: true
           schema: { $ref: '#/components/schemas/Photo/properties/photoId' }
+        - name: username
+          in: query
+          description: The username of the user that removes it
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/username' }
       requestBody:
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/User/properties/username' }
+            schema: { $ref: '#/components/schemas/Like' }
         required: true
       responses:
         "200":
-          description: A like is succesfully added to the photo and the username of who liked is registered
+          description: A like is succesfully added to the photo and the username of who liked is registered. The photo is returned
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/User/properties/username' }
+              schema: { $ref: '#/components/schemas/Photo' }
+        "401":
+          description: The user is non correctly authenticated
+        "403":
+          description: User not authorized to leave a like
         "404":
           description: Photo non found
 
@@ -405,6 +463,8 @@ paths:
               schema: { $ref: '#/components/schemas/User/properties/username' }
         "204":
           description: There is not a like of this user to remove
+        "401":
+          description: The user is non correctly authenticated
 
   /photos/{photoID}/comments/:
     post:
@@ -414,6 +474,11 @@ paths:
       description: |
         This method allows the user to add a comment to a photo. It also records the username of the user that commented, time and date.
       parameters:
+        - name: username
+          in: query
+          description: The username of who's leaving the comment
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/username' }
         - name: photoID
           in: path
           description: The ID of the commented photo
@@ -422,7 +487,7 @@ paths:
       requestBody:
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/Comment' }
+            schema: { $ref: '#/components/schemas/Comment/properties/commentText' }
         required: true
       responses:
         "200":
@@ -432,6 +497,12 @@ paths:
               schema: { $ref: '#/components/schemas/Comment' }
         "400":
           description: Bad request
+        "401":
+          description: The user is non correctly authenticated
+        "403":
+          description: User is not authorized to leave a comment
+        "422":
+          description: The content of the comment exceeded the maxmimum length
 
     delete:
       tags: ["Photos"]
@@ -464,8 +535,10 @@ paths:
               schema: { $ref: '#/components/schemas/User/properties/username' }
         "204":
           description: There is not a comment of this user to remove
+        "401":
+          description: The user is non correctly authenticated
         "403":
-          description: Comment cannot be removed
+          description: User is not authorized to remove the comment
         "404":
           description: Comment non found
 
@@ -493,3 +566,5 @@ paths:
           description: Stream succesfully returned
         "400":
           description: Bad request
+        "401":
+          description: The user is non correctly authenticated
