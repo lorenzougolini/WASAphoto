@@ -1,5 +1,5 @@
 openapi: 3.0.0
-server:
+servers:
   - url: "http://localhost:3000"
 info:
   title: WASAPhoto
