@@ -2,272 +2,532 @@ openapi: 3.0.0
 servers:
   - url: "http://localhost:3000"
 info:
-  title: Fantastic Coffee (decaffeinated)
-  description: Fantastic Coffee (decaffeinated), the skeleton project for Web and Software architecture course
-  version: 1.0.0
+  title: WASAPhoto
+  description: |-
+    Keep in touch with your friends by sharing photos of special moments, thanks to WASAPhoto! You can
+    upload your photos directly from your PC, and they will be visible to everyone following you.
+  version: 0.0.1
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
+     
+  schemas:
+    uuid:
+      description: The general schema of the identifiers
+      type: string
+      pattern: '^[0-9a-f]{10}$'
+      example: 'cwf5t6j8'
+      minLength: 10
+      maxLength: 10
+
+    User:
+      title: User
+      description: This object represents an user
+      type: object
+      properties:
+        userID:
+          description: The identifier of the user
+          type: integer
+          example: 1
+          readOnly: true
+        username:
+          description: |
+            Each user has its own unique username, used to log-in. The username is chosen by the user and it's visible by everyone.
+            The username is what is used to search for other users.
+          type: string
+          example: Maria
+          pattern: '^.*?$'
+          minLength: 3
+          maxLength: 16
+          readOnly: false
+        profile:
+          $ref: '#/components/schemas/Profile'
+
+    Profile:
+      title: Profile
+      description: This represents the profile elements of a registered user
+      type: object
+      properties:
+        photos:
+          description: The list of photos uploaded by the user
+          type: array
+          items: { $ref: '#/components/schemas/Photo'}
+        followers:
+          description: The list of people following the user
+          type: array
+          items: { $ref: '#/components/schemas/User'}
+        following:
+          description: The list of people followed by the user
+          type: array
+          items: { $ref: '#/components/schemas/User'}
+        bannedUsers:
+          description: The list of people banned by the user
+          type: array
+          items: { $ref: '#/components/schemas/User' }
+          
+    Photo:
+      title: Photo
+      description: This object represents an image
+      type: object
+      properties:
+        photoId:
+          $ref: '#/components/schemas/uuid'
+        userId:
+          $ref: '#/components/schemas/User/properties/userID'
+        picture:
+          description: The picture file
+          type: string
+          format: binary
+          minLength: 67
+          maxLength: 1000000000
+        dateAndTime:
+          description: The date and huors when the image was uploaded
+          type: string
+          format: date-time
+          example: "2017-07-21T17:32:28Z"
+          readOnly: true
+        likes:
+          description: The list of users who liked a photo
+          type: array
+          items: { $ref: '#/components/schemas/Like' }
+        comments:
+          description: The list of users who commented a photo along with their comment
+          type: array
+          items: { $ref: '#/components/schemas/Comment' }
+
+    Like:
+      title: Like
+      description: This schema represents a like added to a photo
+      type: object
+      properties:
+        likeID:
+          $ref: '#/components/schemas/uuid'
+        username: 
+          $ref: '#/components/schemas/User/properties/username'
+        photoId:
+          $ref: '#/components/schemas/uuid'
+        dateAndTime:
+          description: The date and time at which the like was left
+          type: string
+          format: date-time
+          example: "2017-07-21T17:32:28Z"
+          readOnly: true
+          minLength: 20
+          maxLength: 20
+
+    Comment:
+      title: Comment
+      description: This schema represents a comment added to a photo with its data
+      type: object
+      properties:
+        commentId:
+          $ref: '#/components/schemas/uuid'
+        username:
+          $ref: '#/components/schemas/User/properties/username'
+        photoId:
+          $ref: "#/components/schemas/uuid"
+        commentText:
+          description: The text of the comment
+          type: string
+          example: "Nice photo!"
+          minLength: 1
+          maxLength: 100
+        dateAndTime:
+          description: The date and huors when the comment was left
+          type: string
+          format: date-time
+          example: "2017-07-21T17:32:28Z"
+          readOnly: true
+          minLength: 20
+          maxLength: 20
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Login
+    description: Login implementation
+  - name: Settings
+    description: Operation on user's own profile
+  - name: Social
+    description: Everything concerning interactions with other users
+  - name: Photos
+    description: Management and data about photos
+
 paths:
-  /status:
-    parameters:
-      - $ref: "#/components/parameters/XAppBuild"
-      - $ref: "#/components/parameters/XAppVersion"
-      - $ref: "#/components/parameters/XAppLanguage"
-      - $ref: "#/components/parameters/XAppPlatform"
-    get:
-      tags: ["General"]
-      operationId: getStatusMessage
-      summary: Get status message for the user about issues / updates
+  /session:
+    post:
+      tags: ["Login"]
+      summary: Logs in the user
       description: |-
-        The response contains a status message meant for the user. It might
-        contains information about current technical issues, update messages
-        or general information.
+        If the user does not exist, it will be created,
+        and an identifier is returned.
+        If the user exists, the user identifier is returned.
+      operationId: doLogin
+      requestBody:
+        description: User details
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User/properties/username' }
+        required: true
       responses:
-        "200":
-          description: Status message available
+        '201':
+          description: User log-in action successful
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StatusInfo"
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "500": { $ref: "#/components/responses/InternalServerError" }
+                { $ref: '#/components/schemas/User' }
 
-  /:
-    get:
-      tags: ["Group 1"]
-      operationId: index
-      summary: Get an index
-      description: |-
-        This is an example of an index API description
-      responses:
-        "200":
-          description: Successful
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-  /context:
+  /users/{userID}:
     parameters:
-      - $ref: "#/components/parameters/XAppBuild"
-      - $ref: "#/components/parameters/XAppVersion"
-      - $ref: "#/components/parameters/XAppLanguage"
-      - $ref: "#/components/parameters/XAppPlatform"
-    post:
-      tags: ["Group 1"]
-      operationId: getContext
-      summary: Another API example
-      description: |-
-        Example description 2
-      responses:
-        "200":
-          description: Request ok
-          headers:
-            X-Access-Token:
-              description: Access token for authenticated requests
-              schema: { type: string }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-  /authenticated:
-    parameters:
-      - $ref: "#/components/parameters/XAppBuild"
-      - $ref: "#/components/parameters/XAppVersion"
-      - $ref: "#/components/parameters/XAppLanguage"
-      - $ref: "#/components/parameters/XAppPlatform"
-    get:
-      tags: ["Group 2"]
-      operationId: getAuthenticatedExample
-      summary: Get an endpoint with authentication
-      description: |-
-        Get an endpoint with auth
-      security:
-        - LegacyAuth: []
-        - AppToken: []
-      responses:
-        "200":
-          description: Logout successful
-        "500": { $ref: "#/components/responses/InternalServerError" }
-
-  /pictures/{cat}:
-    parameters:
-      - $ref: "#/components/parameters/XAppBuild"
-      - $ref: "#/components/parameters/XAppVersion"
-      - $ref: "#/components/parameters/XAppLanguage"
-      - $ref: "#/components/parameters/XAppPlatform"
-      - $ref: "#/components/parameters/cat"
-    get:
-      tags: ["Cat pictures"]
-      operationId: getCatFromPicture
-      summary: Example of a parameter in URL
-      description: |-
-        Example of a parameter in URL
-      security:
-        - LegacyAuth: []
-      responses:
-        "200":
-          description: Student picture found
-          content:
-            image/png:
-              schema:
-                type: string
-                format: binary
-              example: Picture binary file
-        "404":
-          description: Student picture not found
-        "500": { $ref: "#/components/responses/InternalServerError" }
-
-
-  /autofeeder/{cat}:
-    parameters:
-      - $ref: "#/components/parameters/XAppBuild"
-      - $ref: "#/components/parameters/XAppVersion"
-      - $ref: "#/components/parameters/XAppLanguage"
-      - $ref: "#/components/parameters/XAppPlatform"
-      - $ref: "#/components/parameters/cat"
+        - name: userID
+          in: path
+          description: The ID of the logged user 
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
     put:
-      tags: ["Autofeeder"]
-      operationId: createCatAutofeeder
-      summary: Example of PUT operation
-      security:
-        - LegacyAuth: []
+      tags: ["Settings"]
+      operationId: setMyUserName
+      summary: Set the username
+      description: |
+        This method allows the user to change te username. It returns the new username, along with an error message if it is already used.
+      requestBody:
+        description: Set the username
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User/properties/username' }
+        required: true
       responses:
         "200":
-          description: Auto feed enabled
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-    delete:
-      tags: ["Autofeeder"]
-      operationId: deleteCatAutofeeder
-      summary: Example of DELETE operation
-      security:
-        - LegacyAuth: []
-      responses:
-        "200":
-          description: Auto feed disabled
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "500": { $ref: "#/components/responses/InternalServerError" }
+          description: New username succesfully set 
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "400":
+          description: Invalid username provided
+        "401":
+          description: The user is non correctly authenticated
 
-  /session/login:
+    get:
+      tags: ["Social"]
+      operationId: getUserProfile
+      summary: Return user profile by username
+      description: Retutn the profile requested by the user
+      parameters:
+        - name: username
+          in: query
+          description: requested username to return
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/username' }
+      responses:
+        "200":
+          description: User succesfully returned
+          content:
+            application/json: 
+              schema: { $ref: '#/components/schemas/User'}
+        "400":
+          description: Invalid username provided
+        "404":
+          description: Username not found
+
+  /users/{userID}/photos/:
     parameters:
-      - $ref: "#/components/parameters/XAppBuild"
-      - $ref: "#/components/parameters/XAppVersion"
-      - $ref: "#/components/parameters/XAppLanguage"
-      - $ref: "#/components/parameters/XAppPlatform"
+        - name: userID
+          in: path
+          description: The userID of who is uploading the photo
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
     post:
-      tags: ["Session management"]
-      operationId: login
-      summary: Log-in into system
-      description: |-
-        Perform a log-in action using username and password credentials.
-        Returns a token which can be used in authenticated requests.
+      tags: ["Photos"]
+      operationId: uploadPhoto
+      summary: Upload a photo
+      description: |
+        This method allows to upload a new photo on the user profile.
+      requestBody:
+        required: true
+        content:
+          image/jpeg: 
+            schema: { $ref: '#/components/schemas/Photo/properties/picture' }
+      responses:
+        "201": 
+          description: New photo succesfully uploaded
+          content:
+           application/json:
+             schema: { $ref: "#/components/schemas/Photo" }
+        "401":
+          description: The user is non correctly authenticated
+        "415":
+          description: The uploaded photo is of the wrong format
+          content:
+            application/json: 
+              schema: { $ref: "#/components/schemas/Photo" }
+    delete:
+      tags: ["Photos"]
+      operationId: deletePhoto
+      summary: Delete a photo
+      description: | 
+        This method allows a user to delete one of his uploaded photos.
+      parameters:
+        - name: photoID
+          in: query
+          description: The ID of the photo being deleted
+          required: true
+          schema: { $ref: '#/components/schemas/Photo/properties/photoId' }
+      responses:
+        "200": 
+          description: Photo succesfully deleted
+        "401":
+          description: The user is non correctly authenticated
+        "403":
+          description: The user is not authorized to delete the photo 
+  
+  /users/{userID}/followers/{username}:
+    parameters:
+        - name: userID
+          in: path
+          description: The ID of the user who starts following
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID'}
+    put:
+      tags: ["Social"]
+      operationId: followUser
+      summary: Follow another user
+      description: |
+        This methos allows the user to follow other people. After following, the user will see the followed person's photos in his stream
+      requestBody:
+        description: The username of the person the user wants to follow
+        content: 
+          application/json:
+            schema: { $ref: '#/components/schemas/User/properties/username' }
+      responses:
+        "200":
+          description: User succefully followed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "400":
+          description: Invalid username provided
+        "401":
+          description: The user is non correctly authenticated
+        "404":
+          description: Username not found
+          
+    delete:
+      tags: ["Social"]
+      operationId: unfollowUser
+      summary: Unfollow anothe user
+      description: |
+        This method takes an username inside the list of the followed ones and removes it from the list
+      parameters:
+        - name: followedUsername
+          in: query
+          description: The username of who is going to be unfollowed
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/username' }
+      responses:
+        "200":
+          description: User succefully unfollowed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "400":
+          description: Invalid username provided
+        "401":
+          description: The user is non correctly authenticated
+        "404":
+          description: Username not found in the followed list
+
+  /users/{userID}/banned/{username}:
+    parameters:
+        - name: userID
+          in: path
+          description: The ID of the user that is banning someone
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/username' }
+    put:
+      tags: ["Social"]
+      operationId: banUser
+      summary: Ban a user
+      description: |
+        This method allows a user to prevent some other user from seeing his photos.
+      requestBody:
+        description: The username to add inside the banned list
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User/properties/username' }
+        required: true
+      responses:
+        "200":
+          description: The user is succesfully banned and added to a blacklist
+        "400":
+          description: Invalid username to ban provided
+        "401":
+          description: The user is non correctly authenticated
+        "404":
+          description: Username to ban not found
+
+    delete:
+      tags: ["Social"]
+      operationId: unbanUser 
+      summary: Unban a user
+      description: |
+        This method allows to remove a precedently banned user from the blacklist
+      parameters:
+        - name: usernameToUnban
+          in: query
+          description: The username of the user to remove from the balcklist
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/username' }
+      responses:
+        "200":
+          description: User succesfully unbanned
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "401":
+          description: The user is non correctly authenticated
+        "404":
+          description: Username is not found inside the blacklist
+
+  /photos/{photoID}/likes/:
+    parameters: 
+      - { $ref: '#/components/schemas/Photo/properties/photoId' }
+    post:
+      tags: ["Photos"]
+      operationId: likePhoto
+      summary: Add a like to a photo
+      description: |
+        This method allows to add a like to a photo. It also records the username of the user that liked it.
+      parameters:
+        - name: username
+          in: query
+          description: The username of the user that likes the photo
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/username' }
       requestBody:
         content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                userid:
-                  type: string
-                  pattern: '^[a-zA-Z0-9]+$'
-                  minLength: 3
-                  maxLength: 255
-                password:
-                  type: string
-                  pattern: '^.*?$'
-                  minLength: 8
-                  maxLength: 255
+          application/json:
+            schema: { $ref: '#/components/schemas/Like' }
+        required: true
+      responses:
+        "201":
+          description: A like is succesfully added to the photo and the username of who liked is registered. The photo is returned
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Photo' }
+        "401":
+          description: The user is non correctly authenticated
+        "403":
+          description: User not authorized to leave a like
+        "404":
+          description: Photo non found
+
+  /photos/{photoID}/likes/{likeID}:
+    delete:
+      tags: ["Photos"]
+      operationId: unlikePhoto
+      summary: Remove a like from a photo
+      description: |
+        This method allows to remove a like from a photo. It also removes the username of the user performing the action.
+      parameters:
+        - name: likeID
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Like/properties/likeID'}
       responses:
         "200":
-          description: Login successful
-          headers:
-            X-Access-Token:
-              description: Access token for authenticated requests
-              schema: { type: string }
-        "400": { $ref: "#/components/responses/BadRequest" }
+          description: Like is succefully removed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Photo' }
+        "204":
+          description: There is not a like of this user to remove
+        "401":
+          description: The user is non correctly authenticated
+
+  /photos/{photoID}/comments/:
+    parameters: 
+      - { $ref: '#/components/schemas/Photo/properties/photoId' }
+    post:
+      tags: ["Photos"]
+      operationId: commentPhoto
+      summary: Add a comment to a photo
+      description: |
+        This method allows the user to add a comment to a photo. It also records the username of the user that commented, time and date.
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Comment/properties/commentText' }
+        required: true
+      responses:
+        "201":
+          description: Comment is succesfully added to the photo and the username who commented is registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Comment' }
+        "400":
+          description: Bad request
+        "401":
+          description: The user is non correctly authenticated
         "403":
-          description: Login failed
-          headers:
-            X-Message:
-              description: Error message
-              schema: { type: string }
-        "500": { $ref: "#/components/responses/InternalServerError" }
+          description: User is not authorized to leave a comment
+        "422":
+          description: The content of the comment exceeded the maxmimum length
 
+  /photos/{photoID}/comments/{commentID}:
+    delete:
+      tags: ["Photos"]
+      operationId: uncommentPhoto
+      summary: Remove a comment from a photo
+      description: This method allows to remove a comment from a photo
+      parameters:
+        - name: commentID
+          in: path
+          description: The ID of the user that removes the comment
+          required: true
+          schema: { $ref: '#/components/schemas/Comment/properties/commentId' }
+      responses:
+        "200":
+          description: Comment is succefully removed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Photo' }
+        "204":
+          description: There is not a comment of this user to remove
+        "401":
+          description: The user is non correctly authenticated
+        "403":
+          description: User is not authorized to remove the comment
+        "404":
+          description: Comment non found
 
-components:
-  schemas:
-    StatusInfo:
-      title: Status Info
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-            - info
-            - warning
-            - critical
-            - ""
-        title: { type: string }
-        message: { type: string }
-        url: { type: string }
-
-  responses:
-    Unauthorized:
-      description: The access token is missing or it's expired
-    BadRequest:
-      description: The request was not compliant with the documentation (eg. missing fields, etc)
-    InternalServerError:
-      description: The server encountered an internal error. Further info in server logs
-
-  securitySchemes:
-    LegacyAuth:
-      type: apiKey
-      in: header
-      name: X-App-Token
-      description: |-
-        App session token value. This value is sent by the server in the login
-        and session refresh APIs.
-
-  parameters:
-    XAppVersion:
-      schema:
-        type: string
-        pattern: '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
-        minLength: 1
-        maxLength: 10
-      name: X-App-Version
-      in: header
-      required: true
-      description: App human readable version ("semantic version" format)
-      allowEmptyValue: false
-    XAppBuild:
-      schema: { type: integer }
-      name: X-App-Build
-      in: header
-      required: true
-      description: App build number
-      allowEmptyValue: false
-    XAppLanguage:
-      schema:
-        type: string
-        pattern: '^[a-z]{2}([-_][A-Z]{2})?$'
-        minLength: 2
-        maxLength: 5
-      name: X-App-Language
-      in: header
-      required: true
-      description: App language in ISO 639-1 format
-      allowEmptyValue: false
-    XAppPlatform:
-      schema:
-        type: string
-        enum: [ios, android]
-      name: X-App-Platform
-      in: header
-      required: true
-      description: App operating system / platform
-      allowEmptyValue: false
-    cat:
-      schema:
-        type: string
-        pattern: '^[a-zA-Z]+$'
-        minLength: 3
-        maxLength: 10
-      name: cat
-      in: path
-      required: true
-      description: Cat
-      allowEmptyValue: false
+  /stream:
+    get:
+      tags: ["Social"]
+      operationId: getMyStream
+      summary: Get the stream for a user
+      description: |
+        Each user will be presented with a stream of photos (images) in reverse chronological order, with information about when each photo was uploaded and how many likes and comments it has. The stream is composed by photos from following list of the user.
+      parameters:
+        - name: user
+          in: query
+          required: true
+          schema: { $ref : '#/components/schemas/User' }
+        - name: time
+          in: query
+          description: The time at which the stream is requested
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Stream succesfully returned
+        "400":
+          description: Bad request
+        "401":
+          description: The user is non correctly authenticated
