@@ -28,7 +28,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"WASAphoto.uniroma1.it/WASAphoto
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
