@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+<!-- <style>
+    body {background-color: silver;}
+    h1 {color: blue;}
+    p {color: red;}
+</style> -->
+<body>
+    <div>
+        <h1>This is the heading</h1>
+        <p>And this is a paragraph</p>
+        <h2 style="font-family: sans-serif;">this is the second heading</h2>
+    </div>
+    <div>
+        <p id="demo">This is before</p>
+    </div>
+    
+    <table>
+        <tr><td>
+            <a href="https://www.uniroma1.it">
+            <img src="img/sapienza-logo.png" alt="sapienza's logo" width="300px">
+        </a></td></tr>
+        <tr><td>
+            <p>This paragraph is inside the table so not included in the style definition</p>
+        <td></tr>
+    </table>
+
+    <script>
+        document.getElementById("demo").innerHTML = 5+6; // write 11 in the "demo" paragraph
+        document.write(5 + 6); // append 11 to the document
+        window.alert(5 + 6);
+        console.log(5 + 6);
+
+        const myElem = document.createElement('p');
+        myElem.id = 'bar';
+        myElem.style = "color:red;";
+        myElem.innerHTML = "this is red";
+        document.body.appendChild(myElem);
+    </script>
+</body>
+</html>
