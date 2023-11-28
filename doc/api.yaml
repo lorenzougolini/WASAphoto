@@ -74,7 +74,7 @@ components:
       description: This object represents an image
       type: object
       properties:
-        photoId:
+        photoID:
           $ref: '#/components/schemas/uuid'
         userId:
           $ref: '#/components/schemas/User/properties/userID'
@@ -108,7 +108,7 @@ components:
           $ref: '#/components/schemas/uuid'
         username: 
           $ref: '#/components/schemas/User/properties/username'
-        photoId:
+        photoID:
           $ref: '#/components/schemas/uuid'
         dateAndTime:
           description: The date and time at which the like was left
@@ -124,11 +124,11 @@ components:
       description: This schema represents a comment added to a photo with its data
       type: object
       properties:
-        commentId:
+        commentID:
           $ref: '#/components/schemas/uuid'
         username:
           $ref: '#/components/schemas/User/properties/username'
-        photoId:
+        photoID:
           $ref: "#/components/schemas/uuid"
         commentText:
           description: The text of the comment
@@ -265,6 +265,14 @@ paths:
           content:
             application/json: 
               schema: { $ref: "#/components/schemas/Photo" }
+  
+  /users/{userID}/photos/{photoID}:
+    parameters:
+        - name: userID
+          in: path
+          description: The userID of who is uploading the photo
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
     delete:
       tags: ["Photos"]
       operationId: deletePhoto
@@ -273,10 +281,10 @@ paths:
         This method allows a user to delete one of his uploaded photos.
       parameters:
         - name: photoID
-          in: query
+          in: path
           description: The ID of the photo being deleted
           required: true
-          schema: { $ref: '#/components/schemas/Photo/properties/photoId' }
+          schema: { $ref: '#/components/schemas/Photo/properties/photoID' }
       responses:
         "200": 
           description: Photo succesfully deleted
@@ -395,7 +403,7 @@ paths:
 
   /photos/{photoID}/likes/:
     parameters: 
-      - { $ref: '#/components/schemas/Photo/properties/photoId' }
+      - { $ref: '#/components/schemas/Photo/properties/photoID' }
     post:
       tags: ["Photos"]
       operationId: likePhoto
@@ -451,7 +459,7 @@ paths:
 
   /photos/{photoID}/comments/:
     parameters: 
-      - { $ref: '#/components/schemas/Photo/properties/photoId' }
+      - { $ref: '#/components/schemas/Photo/properties/photoID' }
     post:
       tags: ["Photos"]
       operationId: commentPhoto
@@ -489,7 +497,7 @@ paths:
           in: path
           description: The ID of the user that removes the comment
           required: true
-          schema: { $ref: '#/components/schemas/Comment/properties/commentId' }
+          schema: { $ref: '#/components/schemas/Comment/properties/commentID' }
       responses:
         "200":
           description: Comment is succefully removed
