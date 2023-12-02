@@ -10,7 +10,7 @@ import (
 type User struct {
 	userID int
 	username string
-	profile Profile //change to Profile
+	profile int //change to Profile
 }
 
 type Profile struct {

@@ -11,17 +11,32 @@ import (
 func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("content-type", "application/json")
 	
-	id, err := strconv.Atoi(ps.ByName("userid"))
+	userID, err := strconv.Atoi(ps.ByName("userid"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	if id < 0 || id > len(Users){
-		w.WriteHeader(http.StatusNotFound)
+	if userID < 0 || userID > len(Users){
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	json.NewEncoder(w).Encode(Users[id])
+	// if id not right token {
+	// 	w.WriteHeader(http.StatuNotAuthorized)
+	// 	return
+	// }
 	
-}
+	for i := range Users {
+		if Users[i].username == username {
+			user := Users[i]
+			json.NewEncoder(w).Encode(user)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+	}
+	}
