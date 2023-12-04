@@ -1,12 +1,12 @@
 package api
 
 import (
-	"github.com/julienschmidt/httprouter"
-	"net/http"
 	"encoding/json"
+	"net/http"
+
+	"github.com/julienschmidt/httprouter"
 	// "strconv"
 )
-
 
 var Users = []User{}
 
@@ -18,6 +18,6 @@ func (rt *_router) listAllUsers(w http.ResponseWriter, r *http.Request, ps httpr
 	// 	w.WriteHeader(http.StatusBadRequest)
 	// 	return
 	// }
-	
+
 	json.NewEncoder(w).Encode(Users)
 }

@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"time"
 
@@ -9,57 +10,49 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type Photo struct {
-	photoID     uuid.UUID
-	userID      uuid.UUID
-	picture     string
-	dateAndTime time.Time
-	likes       []Like
-	comments    []Comment
-}
-
-type Like struct {
-	likeID      uuid.UUID
-	username    string
-	photoID     uuid.UUID
-	dateAndTime time.Time
-}
-
-type Comment struct {
-	commentID   uuid.UUID
-	username    string
-	photoID     uuid.UUID
-	commentText string
-	dateAndTime time.Time
-}
-
 // getHelloWorld is an example of HTTP endpoint that returns "Hello world!" as a plain text
 func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("content-type", "text/plain")
-	id := 2
-	json.NewEncoder(w).Encode(id)
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	return
-	// }
 
-	// if userID < 0 || userID > len(Users){
-	//  	w.WriteHeader(http.StatusBadRequest)
-	// }
-	// add check if userID incorrect
+	var message string
+	pathUserID := ps.ByName("userid")
+	if pathUserID != userID {
+		w.WriteHeader(http.StatusUnauthorized)
+		message = "User is not correctely authenticated"
+		json.NewEncoder(w).Encode(message)
+	}
+	var loggedUser User
+	for _, user := range Users {
+		if user.userID == userID {
+			loggedUser = user
+			break
+		}
+	}
 
-	// if id not right token {
-	// 	w.WriteHeader(http.StatuNotAuthorized)
-	// 	return
-	// }
-	// id, err := uuid.NewUUID()
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// }
-	// newPhoto := Photo{
-	// 	photoID: id,
-	// 	userID:  userID,
-	// 	picture: "0",
-	// }
+	// assign photoID
+	photoid, err := uuid.NewUUID()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	// retrieve picture from request body
+	picture, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		message = "Server is unable to process the uploaded file"
+		json.NewEncoder(w).Encode(message)
+	}
+
+	// create new Photo object
+	newPhoto := Photo{
+		photoID:     photoid,
+		userID:      uuid.Must(uuid.Parse(pathUserID)),
+		picture:     string(picture),
+		dateAndTime: time.Now().Format("2017-07-21T17:32:28Z"),
+		likes:       []Like{},
+		comments:    []Comment{},
+	}
+	loggedUser.profile.photos = append(loggedUser.profile.photos, newPhoto)
+	json.NewEncoder(w).Encode(newPhoto)
 
 }
