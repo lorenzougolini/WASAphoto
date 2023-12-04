@@ -9,15 +9,15 @@ import (
 )
 
 var Users = []User{}
+var Photos = []Photo{}
 
 // getHelloWorld is an example of HTTP endpoint that returns "Hello world!" as a plain text
-func (rt *_router) listAllUsers(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) listAll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("content-type", "application/json")
-	// id, err := strconv.Atoi(ps.ByName("id"))
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	return
-	// }
 
-	json.NewEncoder(w).Encode(Users)
+	if item := r.URL.Query().Get("item"); item == "users" {
+		json.NewEncoder(w).Encode(Users)
+	} else {
+		json.NewEncoder(w).Encode(Photos)
+	}
 }

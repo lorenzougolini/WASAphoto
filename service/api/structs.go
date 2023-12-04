@@ -1,8 +1,6 @@
 package api
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 )
 
@@ -32,7 +30,7 @@ type Like struct {
 	likeID      uuid.UUID
 	username    string
 	photoID     uuid.UUID
-	dateAndTime time.Time
+	dateAndTime string
 }
 
 type Comment struct {
@@ -40,5 +38,15 @@ type Comment struct {
 	username    string
 	photoID     uuid.UUID
 	commentText string
-	dateAndTime time.Time
+	dateAndTime string
 }
+
+// func find(list interface{}, elem interface{}, attr interface{}) (int, bool) {
+// 	for ind, el := range list {
+// 		if el.attr == elem {
+// 			return ind, 1
+// 		} else {
+// 			return ind, 0
+// 		}
+// 	}
+// }

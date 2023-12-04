@@ -52,6 +52,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		likes:       []Like{},
 		comments:    []Comment{},
 	}
+	Photos = append(Photos, newPhoto)
 	loggedUser.profile.photos = append(loggedUser.profile.photos, newPhoto)
 	json.NewEncoder(w).Encode(newPhoto)
 
