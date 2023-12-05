@@ -173,7 +173,7 @@ paths:
   /users/{userID}:
     put:
       tags: ["Settings"]
-      operationID: setMyUserName
+      operationId: setMyUserName
       summary: Set the username
       description: |
         This method allows the user to change te username. It returns the new username, along with an error message if it is already used.
@@ -202,7 +202,7 @@ paths:
 
     get:
       tags: ["Social"]
-      operationID: getUserProfile
+      operationId: getUserProfile
       summary: Return user profile by username
       description: Retutn the profile requested by the user
       parameters:
@@ -225,7 +225,7 @@ paths:
   /users/{userID}/photos/:
     post:
       tags: ["Photos"]
-      operationID: uploadPhoto
+      operationId: uploadPhoto
       summary: Upload a photo
       description: |
         This method allows to upload a new photo on the user profile.
@@ -255,7 +255,7 @@ paths:
               schema: { $ref: "#/components/schemas/Photo" }
     delete:
       tags: ["Photos"]
-      operationID: deletePhoto
+      operationId: deletePhoto
       summary: Delete a photo
       description: | 
         This method allows a user to delete one of his uploaded photos.
@@ -281,7 +281,7 @@ paths:
   /users/{userID}/followers/:
     put:
       tags: ["Social"]
-      operationID: followUser
+      operationId: followUser
       summary: Follow another user
       description: |
         This methos allows the user to follow other people. After following, the user will see the followed person's photos in his stream
@@ -311,7 +311,7 @@ paths:
           
     delete:
       tags: ["Social"]
-      operationID: unfollowUser
+      operationId: unfollowUser
       summary: Unfollow anothe user
       description: |
         This method takes an username inside the list of the followed ones and removes it from the list
@@ -343,7 +343,7 @@ paths:
   /users/{userID}/banned/:
     put:
       tags: ["Social"]
-      operationID: banUser
+      operationId: banUser
       summary: Ban a user
       description: |
         This method allows a user to prevent some other user from seeing his photos.
@@ -376,7 +376,7 @@ paths:
 
     delete:
       tags: ["Social"]
-      operationID: unbanUser 
+      operationId: unbanUser 
       summary: Unban a user
       description: |
         This method allows to remove a precedently banned user from the blacklist
@@ -405,7 +405,7 @@ paths:
   /photos/{photoID}/likes/:
     put:
       tags: ["Photos"]
-      operationID: likePhoto
+      operationId: likePhoto
       summary: Add a like to a photo
       description: |
         This method allows to add a like to a photo. It also records the username of the user that liked it.
@@ -440,7 +440,7 @@ paths:
 
     delete:
       tags: ["Photos"]
-      operationID: unlikePhoto
+      operationId: unlikePhoto
       summary: Remove a like from a photo
       description: |
         This method allows to remove a like from a photo. It also removes the username of the user performing the action.
@@ -469,7 +469,7 @@ paths:
   /photos/{photoID}/comments/:
     post:
       tags: ["Photos"]
-      operationID: commentPhoto
+      operationId: commentPhoto
       summary: Add a comment to a photo
       description: |
         This method allows the user to add a comment to a photo. It also records the username of the user that commented, time and date.
@@ -506,7 +506,7 @@ paths:
 
     delete:
       tags: ["Photos"]
-      operationID: uncommentPhoto
+      operationId: uncommentPhoto
       summary: Remove a comment from a photo
       description: This method allows to remove a comment from a photo
       parameters:
@@ -545,7 +545,7 @@ paths:
   /stream:
     get:
       tags: ["Social"]
-      operationID: getMyStream
+      operationId: getMyStream
       summary: Get the stream for a user
       description: |
         Each user will be presented with a stream of photos (images) in reverse chronological order, with information about when each photo was uploaded and how many likes and comments it has. The stream is composed by photos from following list of the user.
