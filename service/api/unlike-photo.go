@@ -25,17 +25,18 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 	photoID := ps.ByName("photoid")
 	likeID := ps.ByName("likeid")
-	_, okp := Photos[photoID]
-	_, okl := Likes[likeID]
-	if !okp || !okl {
+	unlikedPhoto, okP := Photos[photoID]
+	_, okL := Likes[likeID]
+	if !okP || !okL {
 		w.WriteHeader(http.StatusNotFound)
 		message = "Like or photo not found"
 		json.NewEncoder(w).Encode(message)
 		return
 	} else {
-		// remove like from list and from photo
+		// remove like from map and from associated photo
+		unlikedPhoto.Likes = remove(unlikedPhoto.Likes, Users[userID].Username)
+		delete(Likes, likeID)
 	}
 
-	likingPhoto.likes = append(likingPhoto.likes[:ind], likingPhoto.likes[ind+1:]...)
-	json.NewEncoder(w).Encode(likingPhoto)
+	json.NewEncoder(w).Encode(unlikedPhoto)
 }

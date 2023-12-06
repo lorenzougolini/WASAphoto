@@ -27,8 +27,8 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.POST("/:userid/photos/:photoid/likes", rt.likePhoto)
 	rt.router.DELETE("/:userid/photos/:photoid/likes/:likeid", rt.unlikePhoto)
 
-	// rt.router.POST("/photos/:photoid/comments", rt.commentPhoto)
-	// rt.router.DELETE("/photos/:photoid/comments/:commentid", rt.uncommentPhoto)
+	rt.router.POST("/:userid/photos/:photoid/comments", rt.commentPhoto)
+	rt.router.DELETE("/:userid/photos/:photoid/comments/:commentid", rt.uncommentPhoto)
 
 	// rt.router.GET("/stream", rt.getStream)
 
