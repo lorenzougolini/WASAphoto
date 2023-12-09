@@ -19,6 +19,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 		w.WriteHeader(http.StatusUnauthorized)
 		message = "User is not correctly authenticated"
 		json.NewEncoder(w).Encode(message)
+		return
 	} else if userID == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -34,10 +35,18 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 	retrieveID, ok := UsernameToId[username]
 	if ok {
+		// id, name, err := rt.db.GetName(retrieveID)
+		// if err != nil {
+		// 	fmt.Println(id + ": " + name)
+		// } else {
+		// 	fmt.Println("No query")
+		// }
 		json.NewEncoder(w).Encode(Users[retrieveID])
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 		message = "Provided username does not exists"
 		json.NewEncoder(w).Encode(message)
+		return
 	}
+
 }

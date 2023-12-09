@@ -12,6 +12,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/lists", rt.listAll)
 
 	rt.router.POST("/session", rt.userLogin)
+
 	rt.router.GET("/users/:userid", rt.getUserProfile)
 	rt.router.PUT("/users/:userid", rt.setUsername)
 
@@ -24,11 +25,11 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.PUT("/users/:userid/banned/:username", rt.banUser)
 	rt.router.DELETE("/users/:userid/banned/:username", rt.unbanUser)
 
-	rt.router.POST("/:userid/photos/:photoid/likes", rt.likePhoto)
-	rt.router.DELETE("/:userid/photos/:photoid/likes/:likeid", rt.unlikePhoto)
+	rt.router.POST("/photos/:userid/:photoid/likes", rt.likePhoto)
+	rt.router.DELETE("/photos/:userid/:photoid/likes/:likeid", rt.unlikePhoto)
 
-	rt.router.POST("/:userid/photos/:photoid/comments", rt.commentPhoto)
-	rt.router.DELETE("/:userid/photos/:photoid/comments/:commentid", rt.uncommentPhoto)
+	rt.router.POST("/photos/:userid/:photoid/comments", rt.commentPhoto)
+	rt.router.DELETE("/photos/:userid/:photoid/comments/:commentid", rt.uncommentPhoto)
 
 	// rt.router.GET("/stream", rt.getStream)
 

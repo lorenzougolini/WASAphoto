@@ -38,8 +38,8 @@ import (
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
-	GetName() (string, error)
-	SetName(name string) error
+	GetName(id string) (string, string, error)
+	SetName(id string, name string)
 
 	Ping() error
 }
@@ -57,9 +57,9 @@ func New(db *sql.DB) (AppDatabase, error) {
 
 	// Check if table exists. If not, the database is empty, and we need to create the structure
 	var tableName string
-	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='example_table';`).Scan(&tableName)
+	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='user';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE example_table (id INTEGER NOT NULL PRIMARY KEY, name TEXT);`
+		sqlStmt := `CREATE TABLE user_table (id STRING NOT NULL PRIMARY KEY, username STRING NOT NULL UNIQUE);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)

@@ -48,8 +48,11 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 		UsernameToId[username] = newUserID
 		Logged["logged"] = newUser.UserID
 		Users[newUser.UserID] = newUser
-		// u, _ := json.Marshal(newUser)
-		// fmt.Println(string(u))
+		rt.db.SetName(newUserID, newUser.Username)
+		if err != nil {
+			fmt.Println("Error in SetName call")
+		}
+
 	}
 
 	json.NewEncoder(w).Encode(Users[newUserID])
