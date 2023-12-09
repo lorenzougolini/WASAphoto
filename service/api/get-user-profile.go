@@ -35,12 +35,12 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 	retrieveID, ok := UsernameToId[username]
 	if ok {
-		// id, name, err := rt.db.GetName(retrieveID)
-		// if err != nil {
-		// 	fmt.Println(id + ": " + name)
-		// } else {
-		// 	fmt.Println("No query")
-		// }
+		id, name, err := rt.db.GetName(username)
+		if err != nil {
+			fmt.Println(id + ": " + name)
+		} else {
+			fmt.Println("No query")
+		}
 		json.NewEncoder(w).Encode(Users[retrieveID])
 	} else {
 		w.WriteHeader(http.StatusNotFound)
