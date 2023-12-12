@@ -33,25 +33,43 @@ func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
-	if _, ok := UsernameToId[username]; ok {
+	// if _, ok := UsernameToId[username]; ok {
 
-		// add folllowing
-		getUser := Users[userID]
+	// 	// add folllowing
+	// 	getUser := Users[userID]
 
-		if ok2 := contains(getUser.Profile.banned, username); ok2 {
-			getUser.Profile.banned = remove(getUser.Profile.banned, username)
-		} else {
-			w.WriteHeader(http.StatusNotFound)
-			message = fmt.Sprintf("The user '%s' is not banned", username)
-			json.NewEncoder(w).Encode(message)
-			return
-		}
+	// 	if ok2 := contains(getUser.Profile.banned, username); ok2 {
+	// 		getUser.Profile.banned = remove(getUser.Profile.banned, username)
+	// 	} else {
+	// 		w.WriteHeader(http.StatusNotFound)
+	// 		message = fmt.Sprintf("The user '%s' is not banned", username)
+	// 		json.NewEncoder(w).Encode(message)
+	// 		return
+	// 	}
 
-	} else {
+	// } else {
+	// 	w.WriteHeader(http.StatusNotFound)
+	// 	message = fmt.Sprintf("The user '%s' doesn't exist", username)
+	// 	json.NewEncoder(w).Encode(message)
+	// 	return
+	// }
+
+	_, err := rt.db.GetUser(username)
+	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		message = fmt.Sprintf("The user '%s' doesn't exist", username)
+		message = fmt.Sprintf("The username '%s' doesn't exist", username)
 		json.NewEncoder(w).Encode(message)
 		return
+	} else {
+		err := rt.db.UnbanUser(Logged["id"], username)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(err)
+			return
+		}
+		message = Logged["username"] + " succesfully unbanned: " + username
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(message)
 	}
 
 	json.NewEncoder(w).Encode(Users[UsernameToId[username]])

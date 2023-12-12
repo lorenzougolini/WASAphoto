@@ -21,15 +21,19 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 		json.NewEncoder(w).Encode(message)
 		return
 	}
+
 	// check if username already exists, if yes log him in
 	var newUserID string
-	id, ok := UsernameToId[username]
-	if ok {
-		Logged["logged"] = Users[id].UserID
-	} else {
+	user, err := rt.db.GetUser(username)
+	if err != nil {
+		print(err)
 		// user doesn't exists, so create a new one
 		generateID, err := uuid.NewUUID()
-		if _, ok := Users[generateID.String()]; err != nil || ok {
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if exists, err := rt.db.CheckID(generateID.String()); err != nil || exists > 0 {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		} else {
@@ -45,15 +49,22 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 				banned:    []string{},
 			},
 		}
-		UsernameToId[username] = newUserID
-		Logged["logged"] = newUser.UserID
-		Users[newUser.UserID] = newUser
-		rt.db.SetName(newUserID, newUser.Username)
-		if err != nil {
-			fmt.Println("Error in SetName call")
-		}
+		// UsernameToId[username] = newUserID
 
+		Logged["id"] = newUser.UserID
+		Logged["username"] = newUser.Username
+
+		// Users[newUser.UserID] = newUser
+		err = rt.db.SetUser(newUserID, newUser.Username)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(err)
+			return
+		}
+	} else {
+		Logged["id"] = user.UserID
+		Logged["username"] = user.Username
 	}
 
-	json.NewEncoder(w).Encode(Users[newUserID])
+	json.NewEncoder(w).Encode(Logged)
 }

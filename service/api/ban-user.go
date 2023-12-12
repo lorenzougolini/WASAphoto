@@ -33,17 +33,35 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 
-	if _, ok := UsernameToId[username]; ok {
+	// if _, ok := UsernameToId[username]; ok {
 
-		// add folllowing
-		getUser := Users[userID]
-		getUser.Profile.banned = append(getUser.Profile.banned, username)
+	// 	// add ban
+	// 	getUser := Users[userID]
+	// 	getUser.Profile.banned = append(getUser.Profile.banned, username)
 
-	} else {
+	// } else {
+	// 	w.WriteHeader(http.StatusNotFound)
+	// 	message = fmt.Sprintf("The username '%s' doesn't exist", username)
+	// 	json.NewEncoder(w).Encode(message)
+	// 	return
+	// }
+
+	user, err := rt.db.GetUser(username)
+	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		message = fmt.Sprintf("The username '%s' doesn't exist", username)
 		json.NewEncoder(w).Encode(message)
 		return
+	} else {
+		err := rt.db.BanUser(Logged, user.Username)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(err)
+			return
+		}
+		message = Logged["username"] + " succesfully banned: " + user.Username
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(message)
 	}
 
 	json.NewEncoder(w).Encode(Users[UsernameToId[username]])
