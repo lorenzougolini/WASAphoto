@@ -40,9 +40,10 @@ import (
 type AppDatabase interface {
 	GetUser(username string) (User, error)
 	SetUser(id string, username string) error
+	SetName(id string, username string) error
 	CheckID(id string) (int, error)
 	FollowUser(user map[string]string, username string) error
-	// UnfollowUser(id string, username string) error
+	UnfollowUser(id string, username string) error
 
 	BanUser(user map[string]string, username string) error
 	UnbanUser(id string, username string) error
@@ -67,7 +68,9 @@ func New(db *sql.DB) (AppDatabase, error) {
 	err2 := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='photos';`).Scan(&tableName)
 	err3 := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='likes';`).Scan(&tableName)
 	err4 := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='comments';`).Scan(&tableName)
-	err5 := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='profiles';`).Scan(&tableName)
+	// err5 := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='profiles';`).Scan(&tableName)
+	err5 := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='follows';`).Scan(&tableName)
+	err6 := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='bans';`).Scan(&tableName)
 
 	// users table
 	if errors.Is(err1, sql.ErrNoRows) {
@@ -128,20 +131,47 @@ func New(db *sql.DB) (AppDatabase, error) {
 	}
 
 	// profiles table
+	// if errors.Is(err5, sql.ErrNoRows) {
+	// 	sqlStmt := `CREATE TABLE IF NOT EXISTS profiles (
+	// 		userid TEXT NOT NULL,
+	// 		photos JSON DEFAULT('[]'),
+	// 		followers JSON DEFAULT('[]'),
+	// 		following JSON DEFAULT('[]'),
+	// 		banned JSON DEFAULT('[]'),
+	// 		FOREIGN KEY (userid) REFERENCES users(userid)
+	// 		);`
+	// 	_, err5 = db.Exec(sqlStmt)
+	// 	if err4 != nil {
+	// 		return nil, fmt.Errorf("error4 creating database structure: %w", err5)
+	// 	}
+	// }
+
+	// follows table
 	if errors.Is(err5, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE IF NOT EXISTS profiles (
+		sqlStmt := `CREATE TABLE IF NOT EXISTS follows (
 			userid TEXT NOT NULL,
-			photos JSON DEFAULT('[]'),
-			followers JSON DEFAULT('[]'),
-			following JSON DEFAULT('[]'),
-			banned JSON DEFAULT('[]'),
+			follow TEXT NOT NULL,
 			FOREIGN KEY (userid) REFERENCES users(userid)
 			);`
-		_, err4 = db.Exec(sqlStmt)
-		if err4 != nil {
-			return nil, fmt.Errorf("error4 creating database structure: %w", err4)
+		_, err5 = db.Exec(sqlStmt)
+		if err5 != nil {
+			return nil, fmt.Errorf("error5 creating database structure: %w", err5)
 		}
 	}
+
+	// bans table
+	if errors.Is(err6, sql.ErrNoRows) {
+		sqlStmt := `CREATE TABLE IF NOT EXISTS bans (
+			userid TEXT NOT NULL,
+			ban TEXT NOT NULL, 
+			FOREIGN KEY (userid) REFERENCES users(userid)
+			);`
+		_, err6 = db.Exec(sqlStmt)
+		if err6 != nil {
+			return nil, fmt.Errorf("error4 creating database structure: %w", err6)
+		}
+	}
+
 	return &appdbimpl{
 		c: db,
 	}, nil

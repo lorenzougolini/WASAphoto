@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
+	// "github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -28,7 +29,7 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 	if err != nil {
 		print(err)
 		// user doesn't exists, so create a new one
-		generateID, err := uuid.NewUUID()
+		generateID, err := uuid.NewV4()
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
