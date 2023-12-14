@@ -3,23 +3,23 @@ package api
 type User struct {
 	UserID   string
 	Username string
-	Profile  Profile
 }
 
-type Profile struct {
-	photos    []string
-	followers []string
-	following []string
-	banned    []string
-}
+// type Profile struct {
+// 	photos    []string
+// 	followers []string
+// 	following []string
+// 	banned    []string
+// }
 
 type Photo struct {
 	PhotoID     string
 	UserID      string
 	Picture     string
 	DateAndTime string
-	Likes       []string
-	Comments    []string
+	Description string
+	// Likes       []string
+	// Comments    []string
 }
 
 type Like struct {
@@ -37,8 +37,9 @@ type Comment struct {
 	dateAndTime string
 }
 
+var Logged = User{}
+
 var UsernameToId = make(map[string]string)
-var Logged = make(map[string]string)
 var Users = make(map[string]User)
 var Photos = make(map[string]Photo)
 var Likes = make(map[string]Like)
@@ -54,7 +55,7 @@ func remove(slice []string, s string) []string {
 }
 
 func checkLogin(id string) bool {
-	return id == Logged["id"]
+	return id == Logged.UserID
 }
 
 func contains(slice []string, s string) bool {

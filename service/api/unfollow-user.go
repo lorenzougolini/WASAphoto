@@ -57,20 +57,20 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 	// 	return
 	// }
 
-	_, err := rt.db.GetUser(username)
+	_, err := rt.db.GetByUsername(username)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		message = fmt.Sprintf("The username '%s' doesn't exist", username)
 		json.NewEncoder(w).Encode(message)
 		return
 	} else {
-		err := rt.db.UnfollowUser(Logged["id"], username)
+		err := rt.db.UnfollowUser(Logged.UserID, username)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(err)
 			return
 		}
-		message = Logged["username"] + " succesfully unfollowed: " + username
+		message = Logged.Username + " succesfully unfollowed: " + username
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(message)
 	}

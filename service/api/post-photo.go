@@ -2,11 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -28,7 +27,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	var newPhotoID string
-	generateID, err := uuid.NewUUID()
+	generateID, err := uuid.NewV4()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -36,11 +35,25 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		newPhotoID = generateID.String()
 	}
 
-	// retrieve picture from request body
-	picture, err := io.ReadAll(r.Body)
+	// FIRST METHOD TO READ BODY
+	// picture, err := io.ReadAll(r.Body)
+	// if err != nil {
+	// 	w.WriteHeader(http.StatusUnprocessableEntity)
+	// 	message = "Server is unable to process the uploaded file"
+	// 	json.NewEncoder(w).Encode(message)
+	// 	return
+	// }
+
+	// SECOND METHOD TO READ BODY
+	type Picture struct {
+		Picture     string // int64
+		Description string
+	}
+	var picture Picture
+	err = json.NewDecoder(r.Body).Decode(&picture)
 	if err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		message = "Server is unable to process the uploaded file"
+		w.WriteHeader(http.StatusBadRequest)
+		message = "Impossible to read the request body"
 		json.NewEncoder(w).Encode(message)
 		return
 	}
@@ -49,14 +62,20 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	newPhoto := Photo{
 		PhotoID:     newPhotoID,
 		UserID:      userID,
-		Picture:     string(picture),
+		Picture:     string(picture.Picture),
 		DateAndTime: time.Now().Format("2017-07-21T17:32:28Z"),
-		Likes:       []string{},
-		Comments:    []string{},
+		Description: string(picture.Description),
 	}
 
-	Photos[newPhotoID] = newPhoto
-	getUser := Users[userID]
-	getUser.Profile.photos = append(getUser.Profile.photos, newPhoto.PhotoID)
+	err = rt.db.PostPhoto(newPhoto)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	// Photos[newPhotoID] = newPhoto
+	// getUser := Users[userID]
+	// getUser.Profile.photos = append(getUser.Profile.photos, newPhoto.PhotoID)
 	json.NewEncoder(w).Encode(newPhoto)
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	// s "WASAphoto.uniroma1.it/WASAphoto/service"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -46,20 +47,21 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 	// 	return
 	// }
 
-	user, err := rt.db.GetUser(username)
+	user, err := rt.db.GetByUsername(username)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		message = fmt.Sprintf("The username '%s' doesn't exist", username)
 		json.NewEncoder(w).Encode(message)
 		return
 	} else {
-		err := rt.db.BanUser(Logged, user.Username)
-		if err != nil {
+		err1 := rt.db.BanUser(Logged, user.Username)
+		err2 := rt.db.UnfollowUser(Logged.UserID, user.Username)
+		if err1 != nil || err2 != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(err)
 			return
 		}
-		message = Logged["username"] + " succesfully banned: " + user.Username
+		message = Logged.Username + " succesfully banned: " + user.Username
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(message)
 	}

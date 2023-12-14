@@ -50,7 +50,7 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 	// 	return
 	// }
 
-	_, err := rt.db.GetUser(username)
+	_, err := rt.db.GetByUsername(username)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		message = fmt.Sprintf("The username '%s' doesn't exist", username)
@@ -63,7 +63,7 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 			json.NewEncoder(w).Encode(err)
 			return
 		}
-		message = Logged["username"] + " succesfully followed: " + username
+		message = Logged.Username + " succesfully followed: " + username
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(message)
 	}

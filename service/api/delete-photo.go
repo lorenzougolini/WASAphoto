@@ -27,15 +27,36 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	// delete the photo from Photos map and User profile
 
 	photoID := ps.ByName("photoid")
-	if _, ok := Photos[photoID]; ok {
-		getUser := Users[userID]
-		getUser.Profile.photos = remove(getUser.Profile.photos, photoID)
-		delete(Photos, photoID)
-	} else {
+	photoExists, photo, err := rt.db.GetPhotoById(photoID)
+	if !photoExists || err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		message = "Server unable to find the photo"
 		json.NewEncoder(w).Encode(message)
+	} else {
+		if photo.UserID != userID {
+			w.WriteHeader(http.StatusUnauthorized)
+			message = "User in not authorized for this action"
+			json.NewEncoder(w).Encode(message)
+			return
+		} else {
+			err = rt.db.RemovePhoto(userID, photoID)
+			if err != nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				json.NewEncoder(w).Encode(err)
+				return
+			}
+		}
 	}
 
-	json.NewEncoder(w).Encode(Logged["logged"])
+	// if _, ok := Photos[photoID]; ok {
+	// 	getUser := Users[userID]
+	// 	getUser.Profile.photos = remove(getUser.Profile.photos, photoID)
+	// 	delete(Photos, photoID)
+	// } else {
+	// 	w.WriteHeader(http.StatusNotFound)
+	// 	message = "Server unable to find the photo"
+	// 	json.NewEncoder(w).Encode(message)
+	// }
+
+	json.NewEncoder(w).Encode(Logged)
 }

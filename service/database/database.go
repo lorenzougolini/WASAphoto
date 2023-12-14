@@ -38,15 +38,21 @@ import (
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
-	GetUser(username string) (User, error)
-	SetUser(id string, username string) error
-	SetName(id string, username string) error
-	CheckID(id string) (int, error)
-	FollowUser(user map[string]string, username string) error
-	UnfollowUser(id string, username string) error
+	GetByUsername(username string) (User, error)
+	SetUser(userid string, username string) error
+	SetName(userid string, username string) error
+	CheckID(userid string) (int, error)
 
-	BanUser(user map[string]string, username string) error
-	UnbanUser(id string, username string) error
+	FollowUser(user User, username string) error
+	UnfollowUser(userid string, username string) error
+
+	BanUser(user User, username string) error
+	UnbanUser(userid string, username string) error
+	IsBanned(userid string, bannedId string) (bool, error)
+
+	PostPhoto(photo Photo) error
+	GetPhotoById(photoid string) (bool, Photo, error)
+	RemovePhoto(photoid string, userid string) error
 
 	Ping() error
 }
@@ -91,6 +97,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			userid TEXT NOT NULL, 
 			picture TEXT NOT NULL, 
 			dateAndTime TEXT NOT NULL,
+			description TEXT,
 			FOREING KEY userid REFERENCES users(userid)
 			);`
 		_, err2 = db.Exec(sqlStmt)

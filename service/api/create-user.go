@@ -25,7 +25,7 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 
 	// check if username already exists, if yes log him in
 	var newUserID string
-	user, err := rt.db.GetUser(username)
+	user, err := rt.db.GetByUsername(username)
 	if err != nil {
 		print(err)
 		// user doesn't exists, so create a new one
@@ -43,17 +43,12 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 		newUser := User{
 			UserID:   newUserID,
 			Username: username,
-			Profile: Profile{
-				photos:    []string{},
-				followers: []string{},
-				following: []string{},
-				banned:    []string{},
-			},
 		}
 		// UsernameToId[username] = newUserID
 
-		Logged["id"] = newUser.UserID
-		Logged["username"] = newUser.Username
+		Logged.UserID = newUser.UserID
+		Logged.Username = newUser.Username
+		// rt.usr.Username = newUser.Username
 
 		// Users[newUser.UserID] = newUser
 		err = rt.db.SetUser(newUserID, newUser.Username)
@@ -63,8 +58,8 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 			return
 		}
 	} else {
-		Logged["id"] = user.UserID
-		Logged["username"] = user.Username
+		Logged.UserID = user.UserID
+		Logged.Username = user.Username
 	}
 
 	json.NewEncoder(w).Encode(Logged)

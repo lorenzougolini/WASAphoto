@@ -44,7 +44,7 @@ func (rt *_router) setUsername(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// Logged["logged"] = getUser.UserID // change username in logged data
 
-	user, err := rt.db.GetUser(Logged["username"])
+	user, err := rt.db.GetByUsername(Logged.Username)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		message = "Error changing the username"
@@ -57,7 +57,7 @@ func (rt *_router) setUsername(w http.ResponseWriter, r *http.Request, ps httpro
 			json.NewEncoder(w).Encode(err)
 			return
 		}
-		Logged["username"] = string(newUsername)
+		Logged.Username = string(newUsername)
 	}
 	json.NewEncoder(w).Encode(Logged)
 }

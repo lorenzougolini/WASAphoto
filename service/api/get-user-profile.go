@@ -35,7 +35,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 	// _, ok := UsernameToId[username]
 	// if ok {
-	// 	user, err := rt.db.GetUser(username)
+	// 	user, err := rt.db.GetByUsername(username)
 	// 	if err != nil {
 	// 		print(err)
 	// 		return
@@ -51,7 +51,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	// 	return
 	// }
 
-	user, err := rt.db.GetUser(username)
+	user, err := rt.db.GetByUsername(username)
 	if err != nil {
 		message = "Provided username does not exists"
 		w.WriteHeader(http.StatusBadRequest)
