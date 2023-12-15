@@ -12,5 +12,4 @@ func (db *appdbimpl) SetName(id string, username string) {
 	if err2 != nil {
 		fmt.Println("Error in Exec")
 	}
-	return
 }
