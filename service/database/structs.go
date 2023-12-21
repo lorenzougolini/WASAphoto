@@ -1,4 +1,4 @@
-package api
+package database
 
 type User struct {
 	UserID   string

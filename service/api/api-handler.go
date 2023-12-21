@@ -13,23 +13,23 @@ func (rt *_router) Handler() http.Handler {
 
 	rt.router.POST("/session", rt.userLogin)
 
-	rt.router.GET("/users/:userid", rt.getUserProfile)
-	rt.router.PUT("/users/:userid", rt.setUsername)
+	rt.router.GET("/users/:username", rt.getUserProfile)
+	rt.router.PUT("/users/:username", rt.setUsername)
 
-	rt.router.POST("/users/:userid/photos", rt.uploadNewPhoto)
-	rt.router.DELETE("/users/:userid/photos/:photoid", rt.deletePhoto)
+	rt.router.POST("/users/:username/photos", rt.uploadNewPhoto)
+	rt.router.DELETE("/users/:username/photos/:photoid", rt.deletePhoto)
 
-	rt.router.PUT("/users/:userid/followers/:username", rt.followUser)
-	rt.router.DELETE("/users/:userid/followers/:username", rt.unfollowUser)
+	rt.router.PUT("/users/:username/followers/:followedUsername", rt.followUser)
+	rt.router.DELETE("/users/:username/followers/:unfollowedUsername", rt.unfollowUser)
 
-	rt.router.PUT("/users/:userid/banned/:username", rt.banUser)
-	rt.router.DELETE("/users/:userid/banned/:username", rt.unbanUser)
+	rt.router.PUT("/users/:username/banned/:bannedUsername", rt.banUser)
+	rt.router.DELETE("/users/:username/banned/:unbannedUsername", rt.unbanUser)
 
-	rt.router.POST("/photos/:userid/:photoid/likes", rt.likePhoto)
-	rt.router.DELETE("/photos/:userid/:photoid/likes/:likeid", rt.unlikePhoto)
+	rt.router.POST("/photos/:photoid/likes", rt.likePhoto)
+	rt.router.DELETE("/photos/:photoid/likes/:likeid", rt.unlikePhoto)
 
-	rt.router.POST("/photos/:userid/:photoid/comments", rt.commentPhoto)
-	rt.router.DELETE("/photos/:userid/:photoid/comments/:commentid", rt.uncommentPhoto)
+	rt.router.POST("/photos/:photoid/comments", rt.commentPhoto)
+	rt.router.DELETE("/photos/:photoid/comments/:commentid", rt.uncommentPhoto)
 
 	// rt.router.GET("/stream", rt.getStream)
 

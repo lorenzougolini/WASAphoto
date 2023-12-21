@@ -94,4 +94,5 @@ type _router struct {
 	baseLogger logrus.FieldLogger
 
 	db database.AppDatabase
+	// usr database.User
 }

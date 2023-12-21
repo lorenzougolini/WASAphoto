@@ -12,7 +12,7 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	w.Header().Set("content-type", "text/plain")
 
 	var message string
-	userID := ps.ByName("userid")
+	userID := r.URL.Query().Get("userid")
 	// check logged user id
 	if !checkLogin(userID) {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -26,18 +26,35 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 
 	photoID := ps.ByName("photoid")
 	commentID := ps.ByName("commentid")
-	uncommentingPhoto, okP := Photos[photoID]
-	_, okC := Comments[commentID]
-
-	if !okP || !okC {
+	existsPhoto, uncommentedPhoto, errP := rt.db.GetPhotoById(photoID)
+	existsComment, removedComment, errC := rt.db.GetLikeById(commentID)
+	if !existsPhoto {
 		w.WriteHeader(http.StatusNotFound)
-		message = "Comment or photo not found"
+		message = "Photo not found"
 		json.NewEncoder(w).Encode(message)
+		return
+
+	} else if !existsComment {
+		w.WriteHeader(http.StatusNotFound)
+		message = "Comment not found"
+		json.NewEncoder(w).Encode(message)
+		return
+
+	} else if errP != nil || errC != nil {
+		message = "Error removing like"
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(message)
+		return
+
 	} else {
-		// remove comment from map and from associated photo
-		uncommentingPhoto.Comments = remove(uncommentingPhoto.Comments, commentID)
-		delete(Comments, commentID)
+		err := rt.db.RemoveLike(removedComment.LikeID, uncommentedPhoto.PhotoID)
+		if err != nil {
+			message = "Error removing comment"
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(message)
+			return
+		}
 	}
 
-	json.NewEncoder(w).Encode(uncommentingPhoto)
+	json.NewEncoder(w).Encode(uncommentedPhoto)
 }

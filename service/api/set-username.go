@@ -13,7 +13,7 @@ func (rt *_router) setUsername(w http.ResponseWriter, r *http.Request, ps httpro
 	w.Header().Set("content-type", "text/plain")
 
 	var message string
-	userID := ps.ByName("userid")
+	userID := r.URL.Query().Get("userid")
 	// check logged user id
 	if !checkLogin(userID) {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -33,16 +33,31 @@ func (rt *_router) setUsername(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	// retrieve user and change its username
-	getUser := Users[userID]
+	// // retrieve user and change its username
+	// getUser := Users[userID]
 
-	UsernameToId[string(newUsername)] = userID // change and delete username->id map
-	delete(UsernameToId, getUser.Username)
+	// UsernameToId[string(newUsername)] = userID // change and delete username->id map
+	// delete(UsernameToId, getUser.Username)
 
-	getUser.Username = string(newUsername) // change username in Users map
-	Users[userID] = getUser
+	// getUser.Username = string(newUsername) // change username in Users map
+	// Users[userID] = getUser
 
-	Logged["logged"] = getUser.UserID // change username in logged data
+	// Logged["logged"] = getUser.UserID // change username in logged data
 
-	json.NewEncoder(w).Encode(Logged["logged"])
+	user, err := rt.db.GetByUsername(Logged.Username)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		message = "Error changing the username"
+		json.NewEncoder(w).Encode(message)
+		return
+	} else {
+		err := rt.db.SetName(user.UserID, string(newUsername))
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(err)
+			return
+		}
+		Logged.Username = string(newUsername)
+	}
+	json.NewEncoder(w).Encode(Logged)
 }

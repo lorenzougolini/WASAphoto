@@ -9,10 +9,10 @@ import (
 )
 
 func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	w.Header().Set("content-type", "text/plain")
+	w.Header().Set("content-type", "application/json")
 
 	var message string
-	userID := ps.ByName("userid")
+	userID := r.URL.Query().Get("userid")
 	// check logged user id
 	if !checkLogin(userID) {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -25,30 +25,49 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 	}
 
 	// check username to follow and proceed it exists
-	username := ps.ByName("username")
-	if (username) == "" || len(string(username)) < 3 || len(string(username)) > 16 {
+	followedUsername := ps.ByName("followedUsername")
+	if (followedUsername) == "" || len(string(followedUsername)) < 3 || len(string(followedUsername)) > 16 {
 		w.WriteHeader(http.StatusBadRequest)
-		message = fmt.Sprintf("The provided username '%s' is not valid", username)
+		message = fmt.Sprintf("The provided username '%s' is not valid", followedUsername)
 		json.NewEncoder(w).Encode(message)
 		return
 	}
 
-	if followedId, ok := UsernameToId[username]; ok {
+	// if followedId, ok := UsernameToId[username]; ok {
 
-		// add folllowing
-		getUser := Users[userID]
-		getUser.Profile.following = append(getUser.Profile.following, username)
+	// 	// add folllowing
+	// 	getUser := Users[userID]
+	// 	getUser.Profile.following = append(getUser.Profile.following, username)
 
-		// update followers of the folllowed user
-		followedUser := Users[followedId]
-		followedUser.Profile.followers = append(followedUser.Profile.followers, userID)
+	// 	// update followers of the folllowed user
+	// 	followedUser := Users[followedId]
+	// 	followedUser.Profile.followers = append(followedUser.Profile.followers, userID)
 
-	} else {
+	// } else {
+	// 	w.WriteHeader(http.StatusNotFound)
+	// 	message = fmt.Sprintf("The username '%s' doesn't exist", username)
+	// 	json.NewEncoder(w).Encode(message)
+	// 	return
+	// }
+
+	_, err := rt.db.GetByUsername(followedUsername)
+	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		message = fmt.Sprintf("The username '%s' doesn't exist", username)
+		message = fmt.Sprintf("The username '%s' doesn't exist", followedUsername)
 		json.NewEncoder(w).Encode(message)
 		return
+	} else {
+		logged, _ := json.Marshal(Logged)
+		err := rt.db.FollowUser(string(logged), followedUsername)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(err)
+			return
+		}
+		message = Logged.Username + " succesfully followed: " + followedUsername
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(message)
 	}
 
-	json.NewEncoder(w).Encode(Users[UsernameToId[username]])
+	json.NewEncoder(w).Encode(Users[UsernameToId[followedUsername]])
 }

@@ -11,7 +11,7 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	w.Header().Set("content-type", "application/json")
 
 	var message string
-	userID := ps.ByName("userid")
+	userID := r.URL.Query().Get("userid")
 	// check logged user id
 	if !checkLogin(userID) {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -25,17 +25,34 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 	photoID := ps.ByName("photoid")
 	likeID := ps.ByName("likeid")
-	unlikedPhoto, okP := Photos[photoID]
-	_, okL := Likes[likeID]
-	if !okP || !okL {
+	existsPhoto, unlikedPhoto, errP := rt.db.GetPhotoById(photoID)
+	existsLike, removedLike, errL := rt.db.GetLikeById(likeID)
+	if !existsPhoto {
 		w.WriteHeader(http.StatusNotFound)
-		message = "Like or photo not found"
+		message = "Photo not found"
 		json.NewEncoder(w).Encode(message)
 		return
+
+	} else if !existsLike {
+		w.WriteHeader(http.StatusNotFound)
+		message = "Like not found"
+		json.NewEncoder(w).Encode(message)
+		return
+
+	} else if errP != nil || errL != nil {
+		message = "Error removing like"
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(message)
+		return
+
 	} else {
-		// remove like from map and from associated photo
-		unlikedPhoto.Likes = remove(unlikedPhoto.Likes, Users[userID].Username)
-		delete(Likes, likeID)
+		err := rt.db.RemoveLike(removedLike.LikeID, unlikedPhoto.PhotoID)
+		if err != nil {
+			message = "Error removing like"
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(message)
+			return
+		}
 	}
 
 	json.NewEncoder(w).Encode(unlikedPhoto)

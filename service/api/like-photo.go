@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -13,7 +13,7 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 	w.Header().Set("content-type", "application/json")
 
 	var message string
-	userID := ps.ByName("userid")
+	userID := r.URL.Query().Get("userid")
 	// check logged user id
 	if !checkLogin(userID) {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -27,7 +27,7 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 
 	// create new LikeID
 	var newLikeID string
-	generateID, err := uuid.NewUUID()
+	generateID, err := uuid.NewV4()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -36,15 +36,35 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 	}
 
 	// create new Like object
-	likingPhoto := Photos[ps.ByName("photoid")]
-	newLike := Like{
-		likeID:      newLikeID,
-		username:    Users[userID].Username,
-		photoID:     likingPhoto.PhotoID,
-		dateAndTime: time.Now().Format("2017-07-21T17:32:28Z"),
+	existsPhoto, likingPhoto, err := rt.db.GetPhotoById(ps.ByName("photoid"))
+	if err != nil {
+		message = "Error liking the photo"
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(message)
+		return
+
+	} else if !existsPhoto {
+		message = "Photo not found"
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(message)
+		return
+
+	} else {
+		newLike := Like{
+			LikeID:      newLikeID,
+			PhotoID:     likingPhoto.PhotoID,
+			UserID:      userID,
+			DateAndTime: time.Now().Format("2017-07-21T17:32:28Z"),
+		}
+
+		like, _ := json.Marshal(newLike)
+		err = rt.db.AddLike(string(like))
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(err)
+			return
+		}
 	}
 
-	Likes[newLikeID] = newLike
-	likingPhoto.Likes = append(likingPhoto.Likes, newLike.username)
 	json.NewEncoder(w).Encode(likingPhoto)
 }

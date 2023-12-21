@@ -9,10 +9,11 @@ import (
 )
 
 func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	w.Header().Set("content-type", "text/plain")
+	w.Header().Set("content-type", "application/json")
 
 	var message string
-	userID := ps.ByName("userid")
+	userID := r.URL.Query().Get("userid")
+	// username := ps.ByName("username")
 	// check logged user id
 	if !checkLogin(userID) {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -25,26 +26,46 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 	}
 
 	// check username to follow and proceed it exists
-	username := ps.ByName("username")
-	if (username) == "" || len(string(username)) < 3 || len(string(username)) > 16 {
+	bannedUsername := ps.ByName("bannedUsername")
+	if (bannedUsername) == "" || len(string(bannedUsername)) < 3 || len(string(bannedUsername)) > 16 {
 		w.WriteHeader(http.StatusBadRequest)
-		message = fmt.Sprintf("The provided username '%s' is not valid", username)
+		message = fmt.Sprintf("The provided username '%s' is not valid", bannedUsername)
 		json.NewEncoder(w).Encode(message)
 		return
 	}
 
-	if _, ok := UsernameToId[username]; ok {
+	// if _, ok := UsernameToId[username]; ok {
 
-		// add folllowing
-		getUser := Users[userID]
-		getUser.Profile.banned = append(getUser.Profile.banned, username)
+	// 	// add ban
+	// 	getUser := Users[userID]
+	// 	getUser.Profile.banned = append(getUser.Profile.banned, username)
 
-	} else {
+	// } else {
+	// 	w.WriteHeader(http.StatusNotFound)
+	// 	message = fmt.Sprintf("The username '%s' doesn't exist", username)
+	// 	json.NewEncoder(w).Encode(message)
+	// 	return
+	// }
+
+	user, err := rt.db.GetByUsername(bannedUsername)
+	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		message = fmt.Sprintf("The username '%s' doesn't exist", username)
+		message = fmt.Sprintf("The username '%s' doesn't exist", bannedUsername)
 		json.NewEncoder(w).Encode(message)
 		return
+	} else {
+		logged, _ := json.Marshal(Logged)
+		err1 := rt.db.BanUser(string(logged), user.Username)
+		err2 := rt.db.UnfollowUser(Logged.UserID, user.Username)
+		if err1 != nil || err2 != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(err)
+			return
+		}
+		message = Logged.Username + " succesfully banned: " + user.Username
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(message)
 	}
 
-	json.NewEncoder(w).Encode(Users[UsernameToId[username]])
+	json.NewEncoder(w).Encode(Users[UsernameToId[bannedUsername]])
 }
