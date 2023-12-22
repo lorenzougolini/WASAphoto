@@ -83,7 +83,7 @@ func run() error {
 
 	// Start Database
 	logger.Println("initializing database support")
-	fmt.Printf("Database filename: %s\n", cfg.DB.Filename)
+	logger.Printf("Database filename at %s\n", cfg.DB.Filename)
 	dbconn, err := sql.Open("sqlite3", cfg.DB.Filename+"?_foreign_keys=1")
 	if err != nil {
 		logger.WithError(err).Error("error opening SQLite DB")
@@ -177,12 +177,12 @@ func run() error {
 		}
 
 		// Log the status of this shutdown.
-		// switch {
-		// case sig == syscall.SIGSTOP:
-		// 	return errors.New("integrity issue caused shutdown")
-		// case err != nil:
-		// 	return fmt.Errorf("could not stop server gracefully: %w", err)
-		// }
+		switch {
+		case sig == syscall.SIGSTOP:
+			return errors.New("integrity issue caused shutdown")
+		case err != nil:
+			return fmt.Errorf("could not stop server gracefully: %w", err)
+		}
 	}
 
 	return nil

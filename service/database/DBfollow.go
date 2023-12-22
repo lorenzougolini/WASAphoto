@@ -5,39 +5,34 @@ import (
 	"fmt"
 )
 
-// GetName is an example that shows you how to query data
-func (db *appdbimpl) FollowUser(loggedUser string, username string) error {
+func (db *appdbimpl) FollowUser(loggedUser string, followedUser string) error {
 
 	logged_user := User{}
+	followed_user := User{}
 	json.Unmarshal([]byte(loggedUser), &logged_user)
-
-	// get the followed user object
-	followedUser, err := db.GetByUsername(username)
-	if err != nil {
-		return err
-	}
+	json.Unmarshal([]byte(followedUser), &followed_user)
 
 	// check followed user didn't ban the logged user
-	if banned, err := db.IsBanned(followedUser.UserID, logged_user.UserID); banned || err != nil {
-		return fmt.Errorf("impossible to follow the user")
+	if banned, err := db.IsBanned(followed_user.UserID, logged_user.UserID); banned || err != nil {
+		return fmt.Errorf("impossible to follow the user; %v", err)
 	}
 
 	// check user isn't already followed
-	followed, err := db.IsFollowed(logged_user.UserID, followedUser.UserID)
+	followed, err := db.IsFollowed(logged_user.UserID, followed_user.UserID)
 	if followed {
-		return fmt.Errorf("the loggedUser '%s' is already followed", username)
+		return fmt.Errorf("the user '%s' is already followed", followed_user.Username)
 
 	} else if err != nil {
-		return fmt.Errorf("error adding the ban: %v", err)
-
-	} else {
-		sqlStmt := "INSERT INTO follows VALUES (?, ?);"
-		_, err = db.c.Exec(sqlStmt, logged_user.UserID, followedUser.UserID)
-		if err != nil {
-			return fmt.Errorf("error adding the follow: %v", err)
-		}
-		return nil
+		return fmt.Errorf("error adding the follow: %v", err)
 	}
+
+	stmt, _ := db.c.Prepare("INSERT INTO follows (userid, followedid) VALUES (?, ?);")
+	res, err := stmt.Exec(logged_user.UserID, followed_user.UserID)
+	fmt.Println(res)
+	if err != nil {
+		return fmt.Errorf("error adding the follow: %v", err)
+	}
+	return nil
 }
 
 // unfollow loggedUser
@@ -56,7 +51,7 @@ func (db *appdbimpl) UnfollowUser(loggedId string, followedUsername string) erro
 		return fmt.Errorf("error removing the follow: %v", err)
 
 	} else {
-		sqlStmt := "DELETE FROM follows WHERE userid=? AND follow=?"
+		sqlStmt := "DELETE FROM follows WHERE userid=? AND followedid=?"
 		_, err := db.c.Exec(sqlStmt, loggedId, followed_user.UserID)
 		return err
 	}
@@ -64,7 +59,7 @@ func (db *appdbimpl) UnfollowUser(loggedId string, followedUsername string) erro
 
 func (db *appdbimpl) IsFollowed(id string, followedId string) (bool, error) {
 	var count int
-	err := db.c.QueryRow("SELECT COUNT(*) FROM follows WHERE userid=? AND ban=?", id, followedId).Scan(&count)
+	err := db.c.QueryRow("SELECT COUNT(*) FROM follows WHERE userid=? AND followedid=?", id, followedId).Scan(&count)
 	if err != nil {
 		return count > 0, err
 	}

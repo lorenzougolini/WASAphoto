@@ -49,7 +49,7 @@ func (db *appdbimpl) UnbanUser(loggedId string, bannedId string) error {
 // check banned user
 func (db *appdbimpl) IsBanned(id string, bannedId string) (bool, error) {
 	var count int
-	err := db.c.QueryRow("SELECT COUNT(*) FROM bans WHERE userid=? AND ban=?", id, bannedId).Scan(&count)
+	err := db.c.QueryRow("SELECT COUNT(*) FROM bans WHERE userid=? AND bannedid=?", id, bannedId).Scan(&count)
 	if err != nil {
 		return count > 0, err
 	}

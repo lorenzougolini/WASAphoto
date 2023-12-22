@@ -65,7 +65,7 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 
 	} else {
-		err := rt.db.UnfollowUser(Logged.UserID, user.Username)
+		err := rt.db.UnfollowUser(Logged.UserID, user.UserID)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(err)
