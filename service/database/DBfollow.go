@@ -27,8 +27,8 @@ func (db *appdbimpl) FollowUser(loggedUser string, followedUser string) error {
 	}
 
 	stmt, _ := db.c.Prepare("INSERT INTO follows (userid, followedid) VALUES (?, ?);")
-	res, err := stmt.Exec(logged_user.UserID, followed_user.UserID)
-	fmt.Println(res)
+	_, err = stmt.Exec(logged_user.UserID, followed_user.UserID)
+	// fmt.Println(res)
 	if err != nil {
 		return fmt.Errorf("error adding the follow: %v", err)
 	}
@@ -36,25 +36,24 @@ func (db *appdbimpl) FollowUser(loggedUser string, followedUser string) error {
 }
 
 // unfollow loggedUser
-func (db *appdbimpl) UnfollowUser(loggedId string, followedUsername string) error {
+func (db *appdbimpl) UnfollowUser(loggedId string, unfollowedUsername string) error {
 
-	followed_user, err := db.GetByUsername(followedUsername)
+	unfollowed_user, err := db.GetByUsername(unfollowedUsername)
 	if err != nil {
 		return fmt.Errorf("error removing the follow: %v", err)
 	}
 
-	followed, err := db.IsFollowed(loggedId, followed_user.UserID)
+	followed, err := db.IsFollowed(loggedId, unfollowed_user.UserID)
 	if !followed {
-		return fmt.Errorf("the user '%s' is not followed at the moment", followed_user.Username)
+		return fmt.Errorf("the user '%s' is not followed at the moment", unfollowed_user.Username)
 
 	} else if err != nil {
 		return fmt.Errorf("error removing the follow: %v", err)
 
-	} else {
-		sqlStmt := "DELETE FROM follows WHERE userid=? AND followedid=?"
-		_, err := db.c.Exec(sqlStmt, loggedId, followed_user.UserID)
-		return err
 	}
+	sqlStmt := "DELETE FROM follows WHERE userid=? AND followedid=?"
+	_, err = db.c.Exec(sqlStmt, loggedId, unfollowed_user.UserID)
+	return err
 }
 
 func (db *appdbimpl) IsFollowed(id string, followedId string) (bool, error) {

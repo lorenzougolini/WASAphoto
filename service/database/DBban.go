@@ -35,13 +35,14 @@ func (db *appdbimpl) BanUser(loggedUser string, username string) error {
 // Unban user
 func (db *appdbimpl) UnbanUser(loggedId string, bannedId string) error {
 	if count, err := db.IsBanned(loggedId, bannedId); !count || err != nil {
-		sqlStmt := "DELETE FROM bans WHERE userid=? AND ban=?"
+		return fmt.Errorf("the user '%s' is not banned at the moment", bannedId)
+
+	} else {
+		sqlStmt := "DELETE FROM bans WHERE userid=? AND bannedid=?"
 		_, err := db.c.Exec(sqlStmt, loggedId, bannedId)
 		if err != nil {
 			return fmt.Errorf("error removing the ban: %v", err)
 		}
-	} else {
-		return fmt.Errorf("the user '%s' is not banned at the moment", bannedId)
 	}
 	return nil
 }

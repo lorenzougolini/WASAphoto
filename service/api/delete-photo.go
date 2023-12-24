@@ -13,8 +13,9 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 	var message string
 	userID := r.URL.Query().Get("userid")
+	username := ps.ByName("username")
 	// check logged user id
-	if !checkLogin(userID) {
+	if !checkLogin(userID) || username != Logged.Username {
 		w.WriteHeader(http.StatusUnauthorized)
 		message = "User is not correctly authenticated"
 		json.NewEncoder(w).Encode(message)
@@ -31,12 +32,14 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		w.WriteHeader(http.StatusNotFound)
 		message = "Server unable to find the photo"
 		json.NewEncoder(w).Encode(message)
+
 	} else {
 		if retrievedPhoto.UserID != userID {
 			w.WriteHeader(http.StatusUnauthorized)
-			message = "User in not authorized for this action"
+			message = "User in not authorized to remove photos from this profile"
 			json.NewEncoder(w).Encode(message)
 			return
+
 		} else {
 			err = rt.db.RemovePhoto(userID, retrievedPhoto.PhotoID)
 			if err != nil {

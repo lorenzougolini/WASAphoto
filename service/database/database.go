@@ -106,7 +106,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			picture TEXT NOT NULL, 
 			dateAndTime TEXT NOT NULL,
 			description TEXT,
-			FOREING KEY userid REFERENCES users(userid) ON DELETE CASCADE
+			FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE
 			);`
 		_, err2 = db.Exec(sqlStmt)
 		if err2 != nil {

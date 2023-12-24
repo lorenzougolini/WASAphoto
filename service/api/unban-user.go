@@ -13,9 +13,9 @@ func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprout
 
 	var message string
 	userID := r.URL.Query().Get("userid")
-	// username := ps.ByName("username")
+	username := ps.ByName("username")
 	// check logged user id
-	if !checkLogin(userID) {
+	if !checkLogin(userID) || username != Logged.Username {
 		w.WriteHeader(http.StatusUnauthorized)
 		message = "User is not correctly authenticated"
 		json.NewEncoder(w).Encode(message)
@@ -27,7 +27,7 @@ func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprout
 
 	// check username to follow and proceed it exists
 	unbannedUsername := ps.ByName("unbannedUsername")
-	if (unbannedUsername) == "" || len(string(unbannedUsername)) < 3 || len(string(unbannedUsername)) > 16 {
+	if unbannedUsername == username || unbannedUsername == "" || len(string(unbannedUsername)) < 3 || len(string(unbannedUsername)) > 16 {
 		w.WriteHeader(http.StatusBadRequest)
 		message = fmt.Sprintf("The provided username '%s' is not valid", unbannedUsername)
 		json.NewEncoder(w).Encode(message)

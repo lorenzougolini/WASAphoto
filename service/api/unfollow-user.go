@@ -13,8 +13,9 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 
 	var message string
 	userID := r.URL.Query().Get("userid")
+	username := ps.ByName("username")
 	// check logged user id
-	if !checkLogin(userID) {
+	if !checkLogin(userID) || username != Logged.Username {
 		w.WriteHeader(http.StatusUnauthorized)
 		message = "User is not correctly authenticated"
 		json.NewEncoder(w).Encode(message)
@@ -26,7 +27,7 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 
 	// check username to unfollow and proceed it exists
 	unfollowedUsername := ps.ByName("unfollowedUsername")
-	if (unfollowedUsername) == "" || len(string(unfollowedUsername)) < 3 || len(string(unfollowedUsername)) > 16 {
+	if unfollowedUsername == username || unfollowedUsername == "" || len(string(unfollowedUsername)) < 3 || len(string(unfollowedUsername)) > 16 {
 		w.WriteHeader(http.StatusBadRequest)
 		message = fmt.Sprintf("The provided username '%s' is not valid", unfollowedUsername)
 		json.NewEncoder(w).Encode(message)
@@ -57,7 +58,7 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 	// 	return
 	// }
 
-	user, err := rt.db.GetByUsername(unfollowedUsername)
+	unfollowedUser, err := rt.db.GetByUsername(unfollowedUsername)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		message = fmt.Sprintf("The username '%s' doesn't exist", unfollowedUsername)
@@ -65,7 +66,7 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 
 	} else {
-		err := rt.db.UnfollowUser(Logged.UserID, user.UserID)
+		err := rt.db.UnfollowUser(Logged.UserID, unfollowedUser.Username)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(err)

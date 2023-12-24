@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -12,21 +11,22 @@ import (
 
 // getHelloWorld is an example of HTTP endpoint that returns "Hello world!" as a plain text
 func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	w.Header().Set("content-type", "application/json")
+	w.Header().Set("content-type", "multipart/form-data")
 
 	var message string
 	userID := r.URL.Query().Get("userid")
+	username := ps.ByName("username")
 	// check logged user id
 	if !checkLogin(userID) {
 		w.WriteHeader(http.StatusUnauthorized)
 		message = "User is not correctly authenticated"
 		json.NewEncoder(w).Encode(message)
 		return
+
 	} else if userID == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	username := ps.ByName("username")
 	if username != Logged.Username {
 		w.WriteHeader(http.StatusUnauthorized)
 		message = "User is not authorized to add photos on this profile"
@@ -53,16 +53,16 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	// }
 
 	// SECOND METHOD TO READ BODY
-	err = r.ParseForm()
+	err = r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		message = ("Failed to read request body")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(message)
 		return
 	}
-	picture := r.Form.Get("picture")
-	description := r.Form.Get("description")
-	fmt.Printf("picture: %s, description: %s", picture, description)
+	picture := r.FormValue("picture")
+	description := r.FormValue("description")
+	// fmt.Printf("picture: %s, description: %s", picture, description)
 
 	// create new Photo object
 	newPhoto := Photo{
