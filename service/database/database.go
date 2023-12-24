@@ -147,22 +147,6 @@ func New(db *sql.DB) (AppDatabase, error) {
 		}
 	}
 
-	// profiles table
-	// if errors.Is(err5, sql.ErrNoRows) {
-	// 	sqlStmt := `CREATE TABLE IF NOT EXISTS profiles (
-	// 		userid TEXT NOT NULL,
-	// 		photos JSON DEFAULT('[]'),
-	// 		followers JSON DEFAULT('[]'),
-	// 		following JSON DEFAULT('[]'),
-	// 		banned JSON DEFAULT('[]'),
-	// 		FOREIGN KEY (userid) REFERENCES users(userid)
-	// 		);`
-	// 	_, err5 = db.Exec(sqlStmt)
-	// 	if err4 != nil {
-	// 		return nil, fmt.Errorf("error4 creating database structure: %w", err5)
-	// 	}
-	// }
-
 	// follows table
 	if errors.Is(err5, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE IF NOT EXISTS follows (

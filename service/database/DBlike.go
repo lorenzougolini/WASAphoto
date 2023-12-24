@@ -8,7 +8,7 @@ import (
 func (db *appdbimpl) GetLikeById(id string) (bool, Like, error) {
 
 	var like Like
-	err := db.c.QueryRow("SELECT * FROM likes WHERE likeid = ?", id).Scan(&like)
+	err := db.c.QueryRow("SELECT * FROM likes WHERE likeid = ?", id).Scan(&like.LikeID, &like.PhotoID, &like.UserID, &like.DateAndTime)
 	if err != nil {
 		return false, like, fmt.Errorf("error retreiving the like")
 	}

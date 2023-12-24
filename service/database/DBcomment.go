@@ -8,7 +8,7 @@ import (
 func (db *appdbimpl) GetCommentById(id string) (bool, Comment, error) {
 
 	var comment Comment
-	err := db.c.QueryRow("SELECT * FROM comments WHERE commentid = ?", id).Scan(&comment)
+	err := db.c.QueryRow("SELECT * FROM comments WHERE commentid = ?", id).Scan(&comment.CommentID, &comment.PhotoID, &comment.UserID, &comment.CommentText, &comment.DateAndTime)
 	if err != nil {
 		return false, comment, fmt.Errorf("error retreiving the comment")
 	}
@@ -20,7 +20,7 @@ func (db *appdbimpl) AddComment(comment string) error {
 	added_comment := Comment{}
 	json.Unmarshal([]byte(comment), &added_comment)
 
-	stmt, _ := db.c.Prepare("INSERT INTO comments VALUES (?, ?, ?, ?)")
+	stmt, _ := db.c.Prepare("INSERT INTO comments VALUES (?, ?, ?, ?, ?)")
 	_, err := stmt.Exec(
 		added_comment.CommentID,
 		added_comment.PhotoID,

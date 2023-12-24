@@ -2,17 +2,16 @@ package api
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/julienschmidt/httprouter"
 )
 
 // getHelloWorld is an example of HTTP endpoint that returns "Hello world!" as a plain text
 func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	w.Header().Set("content-type", "text/plain")
+	w.Header().Set("content-type", "multipart/form-data")
 
 	var message string
 	userID := r.URL.Query().Get("userid")
@@ -27,26 +26,17 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	var newCommentID string
-	generateID, err := uuid.NewUUID()
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	} else {
-		newCommentID = generateID.String()
-	}
-
 	// get comment text from request body
-	text, err := io.ReadAll(r.Body)
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		message = "Server is unable to process the request body"
+		message = ("Failed to read request body")
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(message)
 		return
 	}
+	commentText := r.FormValue("comment")
 
-	commentText := string(text)
-	if len(text) < 1 || len(text) > 100 {
+	if len(commentText) < 1 || len(commentText) > 100 {
 		w.WriteHeader(http.StatusBadRequest)
 		message = "The submitted comment is not valid"
 		json.NewEncoder(w).Encode(message)
@@ -54,8 +44,23 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	// create new comment object
+	var newCommentID string
+	generateID, err := uuid.NewV4()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else {
+		newCommentID = generateID.String()
+	}
+
 	existsPhoto, commentingPhoto, err := rt.db.GetPhotoById(ps.ByName("photoid"))
-	if !existsPhoto {
+	if err != nil {
+		message = "Error commenting the photo"
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(message)
+		return
+
+	} else if !existsPhoto {
 		message = "Photo not found"
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(message)
@@ -72,6 +77,11 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 
 	comment, _ := json.Marshal(newComment)
 	err = rt.db.AddComment(string(comment))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
 	json.NewEncoder(w).Encode(commentingPhoto)
 
 }
