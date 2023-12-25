@@ -49,21 +49,32 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 		json.NewEncoder(w).Encode(message)
 		return
 
-	} else {
-		newLike := Like{
-			LikeID:      newLikeID,
-			PhotoID:     likingPhoto.PhotoID,
-			UserID:      userID,
-			DateAndTime: time.Now().Format("2017-07-21T17:32:28Z"),
-		}
+	} else if banned, err := rt.db.IsBanned(likingPhoto.UserID, userID); banned {
+		message = "User cannot like the photo"
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(message)
+		return
 
-		like, _ := json.Marshal(newLike)
-		err = rt.db.AddLike(string(like))
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(err)
-			return
-		}
+	} else if err != nil {
+		message = "Error liking the photo"
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(message)
+		return
+	}
+
+	newLike := Like{
+		LikeID:      newLikeID,
+		PhotoID:     likingPhoto.PhotoID,
+		UserID:      userID,
+		DateAndTime: time.Now().Format("2017-07-21T17:32:28Z"),
+	}
+
+	like, _ := json.Marshal(newLike)
+	err = rt.db.AddLike(string(like))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
+		return
 	}
 
 	json.NewEncoder(w).Encode(likingPhoto)
