@@ -27,7 +27,7 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	photoID := ps.ByName("photoid")
 	commentID := ps.ByName("commentid")
 	existsPhoto, uncommentedPhoto, errP := rt.db.GetPhotoById(photoID)
-	existsComment, removedComment, errC := rt.db.GetLikeById(commentID)
+	existsComment, removedComment, errC := rt.db.GetCommentById(commentID)
 	if !existsPhoto {
 		w.WriteHeader(http.StatusNotFound)
 		message = "Photo not found"
@@ -47,7 +47,7 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		return
 
 	} else {
-		err := rt.db.RemoveLike(removedComment.LikeID, uncommentedPhoto.PhotoID)
+		err := rt.db.RemoveComment(removedComment.CommentID, uncommentedPhoto.PhotoID)
 		if err != nil {
 			message = "Error removing comment"
 			w.WriteHeader(http.StatusBadRequest)

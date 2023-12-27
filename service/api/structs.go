@@ -5,12 +5,24 @@ type User struct {
 	Username string
 }
 
-// type Profile struct {
-// 	photos    []string
-// 	followers []string
-// 	following []string
-// 	banned    []string
-// }
+type Profile struct {
+	Posts struct {
+		Photos []struct {
+			File        string
+			Description string
+			DateAndTime string
+		}
+		NumberOfPosts int
+	}
+	Followers struct {
+		Usernames         []string
+		NumberOfFollowers int
+	}
+	Following struct {
+		Usernames         []string
+		NumberOfFollowing int
+	}
+}
 
 type Photo struct {
 	PhotoID     string
@@ -18,8 +30,6 @@ type Photo struct {
 	Picture     string
 	DateAndTime string
 	Description string
-	// Likes       []string
-	// Comments    []string
 }
 
 type Like struct {
@@ -35,6 +45,27 @@ type Comment struct {
 	PhotoID     string
 	CommentText string
 	DateAndTime string
+}
+
+type Stream struct {
+	Photos []struct {
+		File   string
+		Author string
+		Likes  []struct {
+			Usernames     []string
+			NumberOfLikes int
+		}
+		Comments struct {
+			Comment []struct {
+				Username    string
+				CommentText string
+				DateAndTime string
+			}
+			NumberOfComments int
+		}
+		Description string
+		DateAndTime string
+	}
 }
 
 var Logged = User{}

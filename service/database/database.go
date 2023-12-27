@@ -42,6 +42,7 @@ type AppDatabase interface {
 	SetUser(userid string, username string) error
 	SetName(userid string, username string) error
 	CheckID(userid string) (int, error)
+	GetProfile(userid string) (Profile, error)
 
 	FollowUser(user string, username string) error
 	UnfollowUser(userid string, username string) error
@@ -61,6 +62,8 @@ type AppDatabase interface {
 	AddComment(comment string) error
 	GetCommentById(id string) (bool, Comment, error)
 	RemoveComment(commentid string, photoid string) error
+
+	GetStream(userid string) (Stream, error)
 
 	Ping() error
 }
@@ -173,10 +176,10 @@ func New(db *sql.DB) (AppDatabase, error) {
 		}
 	}
 
-	_, err := db.Exec("PRAGMA foreign_keys = ON")
-	if err != nil {
-		return &appdbimpl{c: db}, fmt.Errorf("%v", err)
-	}
+	// _, err := db.Exec("PRAGMA foreign_keys = ON")
+	// if err != nil {
+	// 	return &appdbimpl{c: db}, fmt.Errorf("%v", err)
+	// }
 
 	return &appdbimpl{
 		c: db,

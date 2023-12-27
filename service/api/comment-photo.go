@@ -53,8 +53,9 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 		newCommentID = generateID.String()
 	}
 
-	existsPhoto, commentingPhoto, err := rt.db.GetPhotoById(ps.ByName("photoid"))
-	if err != nil {
+	existsPhoto, commentingPhoto, errP := rt.db.GetPhotoById(ps.ByName("photoid"))
+	banned, errB := rt.db.IsBanned(commentingPhoto.UserID, userID)
+	if errP != nil || errB != nil {
 		message = "Error commenting the photo"
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(message)
@@ -63,6 +64,12 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 	} else if !existsPhoto {
 		message = "Photo not found"
 		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(message)
+		return
+
+	} else if banned {
+		message = "User cannot like the photo"
+		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(message)
 		return
 	}

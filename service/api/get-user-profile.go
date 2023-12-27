@@ -33,34 +33,34 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-	// _, ok := UsernameToId[username]
-	// if ok {
-	// 	user, err := rt.db.GetByUsername(username)
-	// 	if err != nil {
-	// 		print(err)
-	// 		return
-	// 	} else {
-	// 		message := user.UserID + ": " + user.Username
-	// 		json.NewEncoder(w).Encode(message)
-	// 	}
-	// 	json.NewEncoder(w).Encode(Users[retrieveID])
-	// } else {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	message = "Provided username does not exists"
-	// 	json.NewEncoder(w).Encode(message)
-	// 	return
-	// }
-
 	user, err := rt.db.GetByUsername(username)
 	if err != nil {
 		message = "Provided username does not exists"
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(message)
 		return
+
 	} else {
 		// add call to getProfile
-		message = user.UserID + ": " + user.Username
+		profile, err := rt.db.GetProfile(user.UserID)
+		if err != nil {
+			message = "Error retrieving the profile"
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(message)
+			return
+		}
+
+		profileJson, err := json.MarshalIndent(profile, "", " ")
+		if err != nil {
+			message = "Error retrieving the profile"
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(message)
+			return
+		}
+
+		message = user.Username
 		json.NewEncoder(w).Encode(message)
+		fmt.Println(string(profileJson))
 	}
 
 }
