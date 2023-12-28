@@ -10,7 +10,7 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 	// get users followed
 	followedRows, err := db.c.Query("SELECT followedid FROM follows WHERE userid = ?", userid)
 	if err != nil {
-		return stream, fmt.Errorf("error retrieving the profile. err: %v", err)
+		return stream, fmt.Errorf("error retrieving the stream. err: %v", err)
 	}
 	defer followedRows.Close()
 
@@ -18,46 +18,46 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 		var followedid string
 
 		if err := followedRows.Scan(&followedid); err != nil {
-			return stream, fmt.Errorf("error retrieving the profile. err: %v", err)
+			return stream, fmt.Errorf("error retrieving the stream. err: %v", err)
 
 		}
 
 		// get photos for each followed user
 		photoRows, err := db.c.Query("SELECT photoid, picture, dateAndTime, description FROM photos WHERE userid = ?", followedid)
 		if err != nil {
-			return stream, fmt.Errorf("error retrieving the profile. err: %v", err)
+			return stream, fmt.Errorf("error retrieving the stream. err: %v", err)
 		}
 		defer photoRows.Close()
 
 		for photoRows.Next() {
 			var photoid string
 			photo := struct {
-				file   string
-				author string
-				likes  struct {
-					numberOfLikes int
-					usernames     []string
+				File   string
+				Author string
+				Likes  struct {
+					NumberOfLikes int
+					Usernames     []string
 				}
-				comments struct {
-					numberOfComments int
-					comment          []struct {
-						username    string
-						commentText string
-						dateAndTime string
+				Comments struct {
+					NumberOfComments int
+					Comment          []struct {
+						Username    string
+						CommentText string
+						DateAndTime string
 					}
 				}
-				description string
-				dateAndTime string
+				Description string
+				DateAndTime string
 			}{}
 
-			if err := photoRows.Scan(&photoid, &photo.file, &photo.dateAndTime, &photo.description); err != nil {
-				return stream, fmt.Errorf("error retrieving the profile. err: %v", err)
+			if err := photoRows.Scan(&photoid, &photo.File, &photo.DateAndTime, &photo.Description); err != nil {
+				return stream, fmt.Errorf("error retrieving the stream. err: %v", err)
 			}
 
 			// retrieve likes and comments of each photo
 			likeRows, err := db.c.Query("SELECT userid FROM likes WHERE photoid = ?", photoid)
 			if err != nil {
-				return stream, fmt.Errorf("error retrieving the profile. err: %v", err)
+				return stream, fmt.Errorf("error retrieving the stream. err: %v", err)
 			}
 			defer likeRows.Close()
 
@@ -65,46 +65,51 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 				var likeAuthor string
 
 				if err := likeRows.Scan(&likeAuthor); err != nil {
-					return stream, fmt.Errorf("error retrieving the profile. err: %v", err)
+					return stream, fmt.Errorf("error retrieving the stream. err: %v", err)
 				}
 
 				if user, err := db.GetById(likeAuthor); err != nil {
-					return stream, fmt.Errorf("error retrieving the profile. err: %v", err)
+					return stream, fmt.Errorf("error retrieving the stream. err: %v", err)
 
 				} else {
-					photo.likes.usernames = append(photo.likes.usernames, user.Username)
+					photo.Likes.Usernames = append(photo.Likes.Usernames, user.Username)
 				}
 			}
-			photo.likes.numberOfLikes = len(photo.likes.usernames)
+			photo.Likes.NumberOfLikes = len(photo.Likes.Usernames)
 
 			commentRows, err := db.c.Query("SELECT userid, commentText, dateAndTime FROM comments WHERE photoid = ?", photoid)
 			if err != nil {
-				return stream, fmt.Errorf("error retrieving the profile. err: %v", err)
+				return stream, fmt.Errorf("error retrieving the stream. err: %v", err)
 			}
 			defer commentRows.Close()
 
 			for commentRows.Next() {
 				var commentAuthor string
 				comment := struct {
-					username    string
-					commentText string
-					dateAndTime string
+					Username    string
+					CommentText string
+					DateAndTime string
 				}{}
 
-				if err := commentRows.Scan(&commentAuthor, &comment.commentText, &comment.dateAndTime); err != nil {
-					return stream, fmt.Errorf("error retrieving the profile. err: %v", err)
+				if err := commentRows.Scan(&commentAuthor, &comment.CommentText, &comment.DateAndTime); err != nil {
+					return stream, fmt.Errorf("error retrieving the stream. err: %v", err)
 				}
 
 				if user, err := db.GetById(commentAuthor); err != nil {
-					return stream, fmt.Errorf("error retrieving the profile. err: %v", err)
+					return stream, fmt.Errorf("error retrieving the stream. err: %v", err)
 
 				} else {
-					comment.username = user.Username
+					comment.Username = user.Username
 				}
-				photo.comments.comment = append(photo.comments.comment, comment)
+				photo.Comments.Comment = append(photo.Comments.Comment, comment)
 			}
-			photo.comments.numberOfComments = len(photo.comments.comment)
+			photo.Comments.NumberOfComments = len(photo.Comments.Comment)
 
+			photoAuthor, err := db.GetById(followedid)
+			if err != nil {
+				return stream, fmt.Errorf("error retrieving the stream. err: %v", err)
+			}
+			photo.Author = photoAuthor.Username
 			stream.Photos = append(stream.Photos, photo)
 		}
 	}

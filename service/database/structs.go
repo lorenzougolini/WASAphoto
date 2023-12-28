@@ -51,17 +51,17 @@ type Stream struct {
 	Photos []struct {
 		File   string
 		Author string
-		Likes  []struct {
-			Usernames     []string
+		Likes  struct {
 			NumberOfLikes int
+			Usernames     []string
 		}
 		Comments struct {
-			Comment []struct {
+			NumberOfComments int
+			Comment          []struct {
 				Username    string
 				CommentText string
 				DateAndTime string
 			}
-			NumberOfComments int
 		}
 		Description string
 		DateAndTime string
@@ -70,31 +70,8 @@ type Stream struct {
 
 var Logged = User{}
 
-var UsernameToId = make(map[string]string)
-var Users = make(map[string]User)
-var Photos = make(map[string]Photo)
-var Likes = make(map[string]Like)
-var Comments = make(map[string]Comment)
-
-func remove(slice []string, s string) []string {
-	for i, el := range slice {
-		if el == s {
-			return append(slice[:i], slice[i+1:]...)
-		}
-	}
-	return slice
-}
-
-func checkLogin(id string) bool {
-	// return id == Logged.UserID && username == Logged.Username
-	return id == Logged.UserID
-}
-
-func contains(slice []string, s string) bool {
-	for _, el := range slice {
-		if el == s {
-			return true
-		}
-	}
-	return false
-}
+// var UsernameToId = make(map[string]string)
+// var Users = make(map[string]User)
+// var Photos = make(map[string]Photo)
+// var Likes = make(map[string]Like)
+// var Comments = make(map[string]Comment)
