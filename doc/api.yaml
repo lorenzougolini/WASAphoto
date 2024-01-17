@@ -95,6 +95,8 @@ components:
           format: date-time
           example: "2017-07-21T17:32:28Z"
           readOnly: true
+          minLength: 20
+          maxLength: 20
         likes:
           description: The list of users who liked a photo
           type: array
@@ -510,7 +512,7 @@ paths:
           description: A like is succesfully added to the photo and the username of who liked is registered. The photo is returned
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Photo' }
+              schema: { $ref: '#/components/schemas/Like' }
         "401":
           description: The user is non correctly authenticated
           content:
@@ -681,6 +683,9 @@ paths:
           schema:
             type: string
             format: date-time
+            example: "2017-07-21T17:32:28Z"
+            minLength: 20
+            maxLength: 20
       responses:
         "200":
           description: Stream succesfully returned
