@@ -18,7 +18,7 @@ func (db *appdbimpl) GetLikeById(id string) (bool, Like, error) {
 func (db *appdbimpl) AddLike(like string) error {
 
 	added_like := Like{}
-	json.Unmarshal([]byte(like), &added_like)
+	_ = json.Unmarshal([]byte(like), &added_like)
 
 	stmt, _ := db.c.Prepare("INSERT INTO likes VALUES (?, ?, ?, ?)")
 	_, err := stmt.Exec(

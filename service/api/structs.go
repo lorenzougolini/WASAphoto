@@ -1,5 +1,9 @@
 package api
 
+import (
+	"net/http"
+)
+
 type User struct {
 	UserID   string
 	Username string
@@ -69,14 +73,19 @@ type Stream struct {
 }
 
 var Logged = User{}
+var uncorrectLogin string = "User is not correctly authenticated"
 
-var UsernameToId = make(map[string]string)
-var Users = make(map[string]User)
-var Photos = make(map[string]Photo)
-var Likes = make(map[string]Like)
-var Comments = make(map[string]Comment)
+// var UsernameToId = make(map[string]string)
+// var Users = make(map[string]User)
+// var Photos = make(map[string]Photo)
+// var Likes = make(map[string]Like)
+// var Comments = make(map[string]Comment)
 
-func checkLogin(id string) bool {
+func checkLogin(r *http.Request) bool {
 	// return id == Logged.UserID && username == Logged.Username
-	return id == Logged.UserID
+	authToken := r.Header.Get("Authorization")
+	if authToken == "" || authToken != Logged.UserID {
+		return false
+	}
+	return true
 }

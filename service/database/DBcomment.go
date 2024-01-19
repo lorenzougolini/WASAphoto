@@ -18,7 +18,7 @@ func (db *appdbimpl) GetCommentById(id string) (bool, Comment, error) {
 func (db *appdbimpl) AddComment(comment string) error {
 
 	added_comment := Comment{}
-	json.Unmarshal([]byte(comment), &added_comment)
+	_ = json.Unmarshal([]byte(comment), &added_comment)
 
 	stmt, _ := db.c.Prepare("INSERT INTO comments VALUES (?, ?, ?, ?, ?)")
 	_, err := stmt.Exec(

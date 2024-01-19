@@ -18,7 +18,7 @@ func (db *appdbimpl) GetPhotoById(photoid string) (bool, Photo, error) {
 func (db *appdbimpl) PostPhoto(photo string) error {
 
 	posted_photo := Photo{}
-	json.Unmarshal([]byte(photo), &posted_photo)
+	_ = json.Unmarshal([]byte(photo), &posted_photo)
 	// fmt.Printf("%v", posted_photo)
 
 	stmt, _ := db.c.Prepare("INSERT INTO photos VALUES (?, ?, ?, ?, ?)")

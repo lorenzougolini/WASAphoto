@@ -9,10 +9,10 @@ import (
 func (db *appdbimpl) BanUser(loggedUser string, username string) error {
 
 	logged_user := User{}
-	json.Unmarshal([]byte(loggedUser), &logged_user)
+	_ = json.Unmarshal([]byte(loggedUser), &logged_user)
 	banned_user, err := db.GetByUsername(username)
 	if err != nil {
-		return fmt.Errorf("error adding the ban: %v", err)
+		return fmt.Errorf("error adding the ban: %w", err)
 	}
 
 	banned, err := db.IsBanned(logged_user.UserID, banned_user.UserID)
@@ -20,13 +20,13 @@ func (db *appdbimpl) BanUser(loggedUser string, username string) error {
 		return fmt.Errorf("the user '%s' is already banned", username)
 
 	} else if err != nil {
-		return fmt.Errorf("error adding the ban: %v", err)
+		return fmt.Errorf("error adding the ban: %w", err)
 
 	} else {
 		sqlStmt := "INSERT INTO bans VALUES (?, ?);"
 		_, err = db.c.Exec(sqlStmt, logged_user.UserID, banned_user.UserID)
 		if err != nil {
-			return fmt.Errorf("error adding the ban: %v", err)
+			return fmt.Errorf("error adding the ban: %w", err)
 		}
 		return nil
 	}
@@ -41,7 +41,7 @@ func (db *appdbimpl) UnbanUser(loggedId string, bannedId string) error {
 		sqlStmt := "DELETE FROM bans WHERE userid=? AND bannedid=?"
 		_, err := db.c.Exec(sqlStmt, loggedId, bannedId)
 		if err != nil {
-			return fmt.Errorf("error removing the ban: %v", err)
+			return fmt.Errorf("error removing the ban: %w", err)
 		}
 	}
 	return nil

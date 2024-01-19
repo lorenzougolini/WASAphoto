@@ -18,7 +18,7 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 	if username == "" || len(username) < 3 || len(username) > 16 {
 		w.WriteHeader(http.StatusBadRequest)
 		message = fmt.Sprintf("The provided username '%s' is not valid", username)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
 
@@ -53,7 +53,7 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 		err = rt.db.SetUser(newUserID, newUser.Username)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(err)
+			_ = json.NewEncoder(w).Encode(err)
 			return
 		}
 	} else {
@@ -61,5 +61,5 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 		Logged.Username = user.Username
 	}
 
-	json.NewEncoder(w).Encode(Logged)
+	_ = json.NewEncoder(w).Encode(Logged)
 }

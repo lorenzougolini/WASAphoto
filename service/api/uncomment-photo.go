@@ -12,15 +12,10 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	w.Header().Set("content-type", "text/plain")
 
 	var message string
-	userID := r.URL.Query().Get("userid")
-	// check logged user id
-	if !checkLogin(userID) {
+	// check Bearer token
+	if !checkLogin(r) {
 		w.WriteHeader(http.StatusUnauthorized)
-		message = "User is not correctly authenticated"
-		json.NewEncoder(w).Encode(message)
-		return
-	} else if userID == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(uncorrectLogin)
 		return
 	}
 
@@ -31,19 +26,19 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	if !existsPhoto {
 		w.WriteHeader(http.StatusNotFound)
 		message = "Photo not found"
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 
 	} else if !existsComment {
 		w.WriteHeader(http.StatusNotFound)
 		message = "Comment not found"
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 
 	} else if errP != nil || errC != nil {
 		message = "Error removing like"
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 
 	} else {
@@ -51,10 +46,10 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		if err != nil {
 			message = "Error removing comment"
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(message)
+			_ = json.NewEncoder(w).Encode(message)
 			return
 		}
 	}
 
-	json.NewEncoder(w).Encode(uncommentedPhoto)
+	_ = json.NewEncoder(w).Encode(uncommentedPhoto)
 }

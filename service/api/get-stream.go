@@ -12,25 +12,20 @@ func (rt *_router) getStream(w http.ResponseWriter, r *http.Request, ps httprout
 	w.Header().Set("content-type", "application/json")
 
 	var message string
-	userID := r.URL.Query().Get("userid")
-	// check logged user id
-	if !checkLogin(userID) {
+	// check Bearer token
+	if !checkLogin(r) {
 		w.WriteHeader(http.StatusUnauthorized)
-		message = "User is not correctly authenticated"
-		json.NewEncoder(w).Encode(message)
-		return
-	} else if userID == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(uncorrectLogin)
 		return
 	}
 
-	stream, err := rt.db.GetStream(userID)
+	stream, err := rt.db.GetStream(Logged.UserID)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		message = "Error getting your stream"
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
 
-	json.NewEncoder(w).Encode(stream)
+	_ = json.NewEncoder(w).Encode(stream)
 }

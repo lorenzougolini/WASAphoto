@@ -12,16 +12,11 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	w.Header().Set("content-type", "application/json")
 
 	var message string
-	userID := r.URL.Query().Get("userid")
 	username := ps.ByName("username")
-	// check logged user id
-	if !checkLogin(userID) || username != Logged.Username {
+	// check Bearer token
+	if !checkLogin(r) || username != Logged.Username {
 		w.WriteHeader(http.StatusUnauthorized)
-		message = "User is not correctly authenticated"
-		json.NewEncoder(w).Encode(message)
-		return
-	} else if userID == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(uncorrectLogin)
 		return
 	}
 
@@ -31,20 +26,20 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	if !photoExists || err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		message = "Server unable to find the photo"
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 
 	} else {
-		if retrievedPhoto.UserID != userID {
+		if retrievedPhoto.UserID != Logged.UserID {
 			w.WriteHeader(http.StatusUnauthorized)
 			message = "User in not authorized to remove photos from this profile"
-			json.NewEncoder(w).Encode(message)
+			_ = json.NewEncoder(w).Encode(message)
 			return
 
 		} else {
-			err = rt.db.RemovePhoto(userID, retrievedPhoto.PhotoID)
+			err = rt.db.RemovePhoto(Logged.UserID, retrievedPhoto.PhotoID)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
-				json.NewEncoder(w).Encode(err)
+				_ = json.NewEncoder(w).Encode(err)
 				return
 			}
 		}
@@ -60,5 +55,5 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	// 	json.NewEncoder(w).Encode(message)
 	// }
 
-	json.NewEncoder(w).Encode(Logged)
+	_ = json.NewEncoder(w).Encode(Logged)
 }

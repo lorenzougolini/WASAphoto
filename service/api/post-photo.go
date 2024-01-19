@@ -14,23 +14,17 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	w.Header().Set("content-type", "multipart/form-data")
 
 	var message string
-	userID := r.URL.Query().Get("userid")
 	username := ps.ByName("username")
-	// check logged user id
-	if !checkLogin(userID) {
+	// check Bearer token
+	if !checkLogin(r) || username != Logged.Username {
 		w.WriteHeader(http.StatusUnauthorized)
-		message = "User is not correctly authenticated"
-		json.NewEncoder(w).Encode(message)
-		return
-
-	} else if userID == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(uncorrectLogin)
 		return
 	}
 	if username != Logged.Username {
 		w.WriteHeader(http.StatusUnauthorized)
 		message = "User is not authorized to add photos on this profile"
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
 
@@ -57,7 +51,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	if err != nil {
 		message = ("Failed to read request body")
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
 	picture := r.FormValue("picture")
@@ -67,7 +61,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	// create new Photo object
 	newPhoto := Photo{
 		PhotoID:     newPhotoID,
-		UserID:      userID,
+		UserID:      Logged.UserID,
 		Picture:     picture,
 		DateAndTime: time.Now().Format("2017-07-21T17:32:28Z"),
 		Description: description,
@@ -77,12 +71,12 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	err = rt.db.PostPhoto(string(photo))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		_ = json.NewEncoder(w).Encode(err)
 		return
 	}
 
 	// Photos[newPhotoID] = newPhoto
 	// getUser := Users[userID]
 	// getUser.Profile.photos = append(getUser.Profile.photos, newPhoto.PhotoID)
-	json.NewEncoder(w).Encode(newPhoto)
+	_ = json.NewEncoder(w).Encode(newPhoto)
 }

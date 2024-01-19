@@ -12,25 +12,20 @@ func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprout
 	w.Header().Set("content-type", "application/json")
 
 	var message string
-	userID := r.URL.Query().Get("userid")
 	username := ps.ByName("username")
-	// check logged user id
-	if !checkLogin(userID) || username != Logged.Username {
+	// check Bearer token
+	if !checkLogin(r) || username != Logged.Username {
 		w.WriteHeader(http.StatusUnauthorized)
-		message = "User is not correctly authenticated"
-		json.NewEncoder(w).Encode(message)
-		return
-	} else if userID == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(uncorrectLogin)
 		return
 	}
 
 	// check username to follow and proceed it exists
 	unbannedUsername := ps.ByName("unbannedUsername")
-	if unbannedUsername == username || unbannedUsername == "" || len(string(unbannedUsername)) < 3 || len(string(unbannedUsername)) > 16 {
+	if unbannedUsername == username || unbannedUsername == "" || len(unbannedUsername) < 3 || len(unbannedUsername) > 16 {
 		w.WriteHeader(http.StatusBadRequest)
 		message = fmt.Sprintf("The provided username '%s' is not valid", unbannedUsername)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
 
@@ -59,20 +54,20 @@ func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprout
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		message = fmt.Sprintf("The username '%s' doesn't exist", unbannedUsername)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 
 	} else {
 		err := rt.db.UnbanUser(Logged.UserID, user.UserID)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(err)
+			_ = json.NewEncoder(w).Encode(err)
 			return
 		}
 		message = Logged.Username + " succesfully unbanned: " + user.Username
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 	}
 
-	json.NewEncoder(w).Encode(Users[UsernameToId[unbannedUsername]])
+	// _ = json.NewEncoder(w).Encode(Users[UsernameToId[unbannedUsername]])
 }

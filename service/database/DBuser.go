@@ -10,7 +10,7 @@ func (db *appdbimpl) SetUser(id string, username string) error {
 	stmt, _ := db.c.Prepare("INSERT INTO users (userid, username) VALUES (?, ?);")
 	_, err := stmt.Exec(id, username)
 	if err != nil {
-		return fmt.Errorf("error in profie creation. err: %v", err)
+		return fmt.Errorf("error in profie creation. err: %w", err)
 	}
 	return nil
 }
@@ -34,7 +34,7 @@ func (db *appdbimpl) GetByUsername(username string) (User, error) {
 		if err == sql.ErrNoRows {
 			return user, fmt.Errorf("user ByUsername %s: no such user", username)
 		}
-		return user, fmt.Errorf("user ByUsername %s: %v", username, err)
+		return user, fmt.Errorf("user ByUsername %s: %w", username, err)
 	}
 	return user, nil
 }
@@ -46,7 +46,7 @@ func (db *appdbimpl) GetById(userid string) (User, error) {
 		if err == sql.ErrNoRows {
 			return user, fmt.Errorf("user ByUsername %s: no such user", userid)
 		}
-		return user, fmt.Errorf("user ByUsername %s: %v", userid, err)
+		return user, fmt.Errorf("user ByUsername %s: %w", userid, err)
 	}
 	return user, nil
 }
@@ -55,7 +55,7 @@ func (db *appdbimpl) CheckID(id string) (int, error) {
 	var count int
 	err := db.c.QueryRow("SELECT COUNT(*) FROM users WHERE userid = ?", id).Scan(&count)
 	if err != nil {
-		return 0, fmt.Errorf("search id %s: %v", id, err)
+		return 0, fmt.Errorf("search id %s: %w", id, err)
 	}
 	return count, nil
 }
@@ -66,7 +66,7 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 	// get photos
 	rows, err := db.c.Query("SELECT picture, dateAndTime, description FROM photos WHERE userid = ?", userid)
 	if err != nil {
-		return profile, fmt.Errorf("error retrieving the profile. err: %v", err)
+		return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 	}
 	defer rows.Close()
 
@@ -78,7 +78,7 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 		}{}
 
 		if err := rows.Scan(&photo.File, &photo.DateAndTime, &photo.Description); err != nil {
-			return profile, fmt.Errorf("error retrieving the profile. err: %v", err)
+			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 		}
 
 		profile.Posts.Photos = append(profile.Posts.Photos, photo)
@@ -88,7 +88,7 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 	// get followers
 	rows, err = db.c.Query("SELECT userid FROM follows WHERE followedid = ?", userid)
 	if err != nil {
-		return profile, fmt.Errorf("error retrieving the profile. err: %v", err)
+		return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 	}
 	defer rows.Close()
 
@@ -96,11 +96,11 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 		var followerid string
 
 		if err := rows.Scan(&followerid); err != nil {
-			return profile, fmt.Errorf("error retrieving the profile. err: %v", err)
+			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 		}
 
 		if user, err := db.GetById(followerid); err != nil {
-			return profile, fmt.Errorf("error retrieving the profile. err: %v", err)
+			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 
 		} else {
 			profile.Followers.Usernames = append(profile.Followers.Usernames, user.Username)
@@ -111,7 +111,7 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 	// get following
 	rows, err = db.c.Query("SELECT followedid FROM follows WHERE userid = ?", userid)
 	if err != nil {
-		return profile, fmt.Errorf("error retrieving the profile. err: %v", err)
+		return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 	}
 	defer rows.Close()
 
@@ -119,12 +119,12 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 		var followedid string
 
 		if err := rows.Scan(&followedid); err != nil {
-			return profile, fmt.Errorf("error retrieving the profile. err: %v", err)
+			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 
 		}
 
 		if user, err := db.GetById(followedid); err != nil {
-			return profile, fmt.Errorf("error retrieving the profile. err: %v", err)
+			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 
 		} else {
 			profile.Following.Usernames = append(profile.Following.Usernames, user.Username)

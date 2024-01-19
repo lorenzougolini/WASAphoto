@@ -14,15 +14,10 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 	w.Header().Set("content-type", "multipart/form-data")
 
 	var message string
-	userID := r.URL.Query().Get("userid")
-	// check logged user id
-	if !checkLogin(userID) {
+	// check Bearear token
+	if !checkLogin(r) {
 		w.WriteHeader(http.StatusUnauthorized)
-		message = "User is not correctly authenticated"
-		json.NewEncoder(w).Encode(message)
-		return
-	} else if userID == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(uncorrectLogin)
 		return
 	}
 
@@ -31,7 +26,7 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 	if err != nil {
 		message = ("Failed to read request body")
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
 	commentText := r.FormValue("comment")
@@ -39,7 +34,7 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 	if len(commentText) < 1 || len(commentText) > 100 {
 		w.WriteHeader(http.StatusBadRequest)
 		message = "The submitted comment is not valid"
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
 
@@ -54,29 +49,29 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	existsPhoto, commentingPhoto, errP := rt.db.GetPhotoById(ps.ByName("photoid"))
-	banned, errB := rt.db.IsBanned(commentingPhoto.UserID, userID)
+	banned, errB := rt.db.IsBanned(commentingPhoto.UserID, Logged.UserID)
 	if errP != nil || errB != nil {
 		message = "Error commenting the photo"
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 
 	} else if !existsPhoto {
 		message = "Photo not found"
 		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 
 	} else if banned {
 		message = "User cannot like the photo"
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
 
 	newComment := Comment{
 		CommentID:   newCommentID,
-		UserID:      userID,
+		UserID:      Logged.UserID,
 		PhotoID:     commentingPhoto.PhotoID,
 		CommentText: commentText,
 		DateAndTime: time.Now().Format("2017-07-21T17:32:28Z"),
@@ -86,9 +81,9 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 	err = rt.db.AddComment(string(comment))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		_ = json.NewEncoder(w).Encode(err)
 		return
 	}
-	json.NewEncoder(w).Encode(commentingPhoto)
+	_ = json.NewEncoder(w).Encode(commentingPhoto)
 
 }

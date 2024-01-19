@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ardanlabs/conf"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -45,7 +46,7 @@ func loadConfiguration() (WebAPIConfiguration, error) {
 			if err != nil {
 				return cfg, fmt.Errorf("generating config usage: %w", err)
 			}
-			fmt.Println(usage) //nolint:forbidigo
+			logrus.Println(usage) //nolint:forbidigo
 			return cfg, conf.ErrHelpWanted
 		}
 		return cfg, fmt.Errorf("parsing config: %w", err)

@@ -12,25 +12,20 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 	w.Header().Set("content-type", "application/json")
 
 	var message string
-	userID := r.URL.Query().Get("userid")
 	username := ps.ByName("username")
-	// check logged user id
-	if !checkLogin(userID) || username != Logged.Username {
+	// check Bearer token
+	if !checkLogin(r) || username != Logged.Username {
 		w.WriteHeader(http.StatusUnauthorized)
-		message = "User is not correctly authenticated"
-		json.NewEncoder(w).Encode(message)
-		return
-	} else if userID == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(uncorrectLogin)
 		return
 	}
 
 	// check username to follow and proceed it exists
 	bannedUsername := ps.ByName("bannedUsername")
-	if bannedUsername == username || bannedUsername == "" || len(string(bannedUsername)) < 3 || len(string(bannedUsername)) > 16 {
+	if bannedUsername == username || bannedUsername == "" || len(bannedUsername) < 3 || len(bannedUsername) > 16 {
 		w.WriteHeader(http.StatusBadRequest)
 		message = fmt.Sprintf("The provided username '%s' is not valid", bannedUsername)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
 
@@ -51,7 +46,7 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		message = fmt.Sprintf("The username '%s' doesn't exist", bannedUsername)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 	} else {
 		logged, _ := json.Marshal(Logged)
@@ -59,13 +54,13 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		err2 := rt.db.UnfollowUser(Logged.UserID, user.Username)
 		if err1 != nil || err2 != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(err)
+			_ = json.NewEncoder(w).Encode(err)
 			return
 		}
 		message = Logged.Username + " succesfully banned: " + user.Username
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 	}
 
-	json.NewEncoder(w).Encode(Users[UsernameToId[bannedUsername]])
+	// _ = json.NewEncoder(w).Encode(Users[UsernameToId[bannedUsername]])
 }
