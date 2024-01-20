@@ -23,7 +23,7 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 		}
 
 		// get photos for each followed user
-		photoRows, err := db.c.Query("SELECT photoid, picture, dateAndTime, description FROM photos WHERE userid = ?", followedid)
+		photoRows, err := db.c.Query("SELECT photoid, dateAndTime, description FROM photos WHERE userid = ?", followedid)
 		if err != nil {
 			return stream, fmt.Errorf("error retrieving the stream. err: %w", err)
 		}
@@ -32,9 +32,9 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 		for photoRows.Next() {
 			var photoid string
 			photo := struct {
-				File   string
-				Author string
-				Likes  struct {
+				PhotoID string
+				Author  string
+				Likes   struct {
 					NumberOfLikes int
 					Usernames     []string
 				}
@@ -50,9 +50,10 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 				DateAndTime string
 			}{}
 
-			if err := photoRows.Scan(&photoid, &photo.File, &photo.DateAndTime, &photo.Description); err != nil {
+			if err := photoRows.Scan(&photoid, &photo.DateAndTime, &photo.Description); err != nil {
 				return stream, fmt.Errorf("error retrieving the stream. err: %w", err)
 			}
+			photo.PhotoID = photoid
 
 			// retrieve likes and comments of each photo
 			likeRows, err := db.c.Query("SELECT userid FROM likes WHERE photoid = ?", photoid)

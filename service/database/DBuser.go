@@ -64,7 +64,7 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 	profile := Profile{}
 
 	// get photos
-	rows, err := db.c.Query("SELECT picture, dateAndTime, description FROM photos WHERE userid = ?", userid)
+	rows, err := db.c.Query("SELECT photoid, dateAndTime, description FROM photos WHERE userid = ?", userid)
 	if err != nil {
 		return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 	}
@@ -72,12 +72,12 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 
 	for rows.Next() {
 		photo := struct {
-			File        string
+			PhotoID     string
 			Description string
 			DateAndTime string
 		}{}
 
-		if err := rows.Scan(&photo.File, &photo.DateAndTime, &photo.Description); err != nil {
+		if err := rows.Scan(&photo.PhotoID, &photo.DateAndTime, &photo.Description); err != nil {
 			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 		}
 

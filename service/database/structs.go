@@ -8,7 +8,7 @@ type User struct {
 type Profile struct {
 	Posts struct {
 		Photos []struct {
-			File        string
+			PhotoID     string
 			Description string
 			DateAndTime string
 		}
@@ -49,9 +49,9 @@ type Comment struct {
 
 type Stream struct {
 	Photos []struct {
-		File   string
-		Author string
-		Likes  struct {
+		PhotoID string
+		Author  string
+		Likes   struct {
 			NumberOfLikes int
 			Usernames     []string
 		}

@@ -26,6 +26,13 @@ func (rt *_router) getStream(w http.ResponseWriter, r *http.Request, ps httprout
 		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
-
-	_ = json.NewEncoder(w).Encode(stream)
+	streamJson, err := json.MarshalIndent(stream, "", " ")
+	if err != nil {
+		message = "Error retrieving the profile"
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(message)
+		return
+	}
+	_ = json.NewEncoder(w).Encode(Logged.Username)
+	w.Write(streamJson)
 }
