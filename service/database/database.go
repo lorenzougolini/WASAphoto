@@ -106,7 +106,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		sqlStmt := `CREATE TABLE IF NOT EXISTS photos (
 			photoid TEXT NOT NULL PRIMARY KEY, 
 			userid TEXT NOT NULL, 
-			picture TEXT NOT NULL, 
+			picPath TEXT NOT NULL, 
 			dateAndTime TEXT NOT NULL,
 			description TEXT,
 			FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE

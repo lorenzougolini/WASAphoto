@@ -2,7 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -37,15 +40,6 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		newPhotoID = generateID.String()
 	}
 
-	// FIRST METHOD TO READ BODY
-	// picture, err := io.ReadAll(r.Body)
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusUnprocessableEntity)
-	// 	message = "Server is unable to process the uploaded file"
-	// 	json.NewEncoder(w).Encode(message)
-	// 	return
-	// }
-
 	// SECOND METHOD TO READ BODY
 	err = r.ParseMultipartForm(10 << 20)
 	if err != nil {
@@ -54,18 +48,46 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
-	picture := r.FormValue("picture")
+	picture, picHandler, err := r.FormFile("picture")
+	if err != nil {
+		_ = json.NewEncoder(w).Encode("Error retrieving the file")
+		return
+	}
+	defer picture.Close()
 	description := r.FormValue("description")
 	// fmt.Printf("picture: %s, description: %s", picture, description)
+
+	picDir := "./pictures/"
+	if _, err := os.Stat(picDir); os.IsNotExist(err) {
+		err := os.Mkdir(picDir, os.ModePerm)
+		if err != nil {
+			_ = json.NewEncoder(w).Encode("Error creating upload directory")
+			return
+		}
+	}
 
 	// create new Photo object
 	newPhoto := Photo{
 		PhotoID:     newPhotoID,
 		UserID:      Logged.UserID,
-		Picture:     picture,
+		PicPath:     picDir + newPhotoID + ".jpg",
 		DateAndTime: time.Now().Format("2017-07-21T17:32:28Z"),
 		Description: description,
 	}
+
+	dst, err := os.Create(newPhoto.PicPath)
+	if err != nil {
+		_ = json.NewEncoder(w).Encode("Error creating the file")
+		return
+	}
+	defer dst.Close()
+	if _, err := io.Copy(dst, picture); err != nil {
+		_ = json.NewEncoder(w).Encode("Error copying the file")
+		return
+	}
+	// Respond with a success message
+	message = fmt.Sprintf("File %s uploaded successfully!", picHandler.Filename)
+	_ = json.NewEncoder(w).Encode(message)
 
 	photo, _ := json.Marshal(newPhoto)
 	err = rt.db.PostPhoto(string(photo))

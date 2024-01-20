@@ -31,7 +31,7 @@ type Profile struct {
 type Photo struct {
 	PhotoID     string
 	UserID      string
-	Picture     string
+	PicPath     string
 	DateAndTime string
 	Description string
 }
