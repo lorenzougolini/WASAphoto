@@ -11,7 +11,11 @@ export default {
 			this.loading = true;
 			this.errormsg = null;
 			try {
-				await this.$axios.get("/");
+				let response = await this.$axios.post("/session", {
+					username: this.username,
+				});
+
+				this.$router.replace("/");
 			} catch (e) {
 				this.errormsg = e.toString();
 			}
@@ -34,19 +38,23 @@ export default {
 					<button type="button" class="btn btn-sm btn-outline-secondary" @click="refresh">
 						Refresh
 					</button>
-					<button type="button" class="btn btn-sm btn-outline-secondary" @click="exportList">
-						Export
-					</button>
 				</div>
-				<div class="btn-group me-2">
+				<!-- <div class="btn-group me-2">
 					<button type="button" class="btn btn-sm btn-outline-primary" @click="newItem">
-						New
+						Login
 					</button>
-				</div>
+				</div> -->
 			</div>
 		</div>
 
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
+
+		<form @submit.prevent="create">
+			username: <input type="text" v-model="username" /><br />
+			<button type="submit">
+				Login
+			</button>
+		</form>
 	</div>
 </template>
 
