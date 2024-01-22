@@ -57,7 +57,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	description := r.FormValue("description")
 	// fmt.Printf("picture: %s, description: %s", picture, description)
 
-	picDir := "./pictures/"
+	picDir := "./webui/public/pictures/"
 	if _, err := os.Stat(picDir); os.IsNotExist(err) {
 		err := os.Mkdir(picDir, os.ModePerm)
 		if err != nil {

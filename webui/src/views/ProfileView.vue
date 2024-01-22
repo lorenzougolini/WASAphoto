@@ -1,5 +1,10 @@
 <script>
+import Photo from '../components/Photo.vue';
+
 export default {
+    components: {
+        Photo,
+    },
     // props: ['logged'],
     
 	data: function() {
@@ -123,8 +128,11 @@ export default {
             </p>
             <ul v-if="this.profileJson.Posts">
                 <li v-for="photo in this.profilePhotos">
-                    {{ photo.PhotoID }}, {{ photo.Description }}, {{ photo.DateAndTime }}
-                    <img v-bind:src="`/pictures/${photo.PhotoID}.jpg`" alt="{{photo.Description}}">
+                    <!-- {{ photo.PhotoID }}, {{ photo.Description }}, {{ photo.DateAndTime }}
+                    <img v-bind:src="`/pictures/${photo.PhotoID}.jpg`" alt="{{photo.Description}}"> -->
+
+                    <Photo :photo="photo" />
+
                 </li>
             </ul>
         </div>
