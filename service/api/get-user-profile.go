@@ -53,8 +53,8 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 			return
 		}
 
-		message = user.Username
-		_ = json.NewEncoder(w).Encode(message)
+		// message = user.Username
+		// _ = json.NewEncoder(w).Encode(message)
 		w.Write(profileJson)
 		// logrus.Println(string(profileJson))
 	}
