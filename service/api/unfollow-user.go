@@ -29,30 +29,6 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	// if unfollowedId, ok := UsernameToId[username]; ok {
-
-	// 	getUser := Users[userID]
-	// 	if ok2 := contains(getUser.Profile.following, username); ok2 {
-	// 		// remove folllowing
-	// 		getUser.Profile.following = remove(getUser.Profile.following, username)
-
-	// 		// update followers of the unfollowed user
-	// 		unfollowedUser := Users[unfollowedId]
-	// 		unfollowedUser.Profile.followers = remove(unfollowedUser.Profile.followers, userID)
-	// 	} else {
-	// 		w.WriteHeader(http.StatusNotFound)
-	// 		message = fmt.Sprintf("The user '%s' is not followed", username)
-	// 		json.NewEncoder(w).Encode(message)
-	// 		return
-	// 	}
-
-	// } else {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	message = fmt.Sprintf("The user '%s' doesn't exist", username)
-	// 	json.NewEncoder(w).Encode(message)
-	// 	return
-	// }
-
 	unfollowedUser, err := rt.db.GetByUsername(unfollowedUsername)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -71,6 +47,4 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 		w.WriteHeader(http.StatusCreated)
 		_ = json.NewEncoder(w).Encode(message)
 	}
-
-	// _ = json.NewEncoder(w).Encode(Users[UsernameToId[unfollowedUsername]])
 }

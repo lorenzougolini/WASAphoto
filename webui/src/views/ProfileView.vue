@@ -130,7 +130,7 @@ export default {
     },
 
 	mounted() {
-		this.loadProfile(this.username)
+		this.loadProfile(this.shownUsername)
 	}
 }
 </script>

@@ -28,17 +28,6 @@ func (rt *_router) setUsername(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	// // retrieve user and change its username
-	// getUser := Users[userID]
-
-	// UsernameToId[string(newUsername)] = userID // change and delete username->id map
-	// delete(UsernameToId, getUser.Username)
-
-	// getUser.Username = string(newUsername) // change username in Users map
-	// Users[userID] = getUser
-
-	// Logged["logged"] = getUser.UserID // change username in logged data
-
 	user, err := rt.db.GetByUsername(Logged.Username)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)

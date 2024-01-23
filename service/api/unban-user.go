@@ -29,27 +29,6 @@ func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
-	// if _, ok := UsernameToId[username]; ok {
-
-	// 	// add folllowing
-	// 	getUser := Users[userID]
-
-	// 	if ok2 := contains(getUser.Profile.banned, username); ok2 {
-	// 		getUser.Profile.banned = remove(getUser.Profile.banned, username)
-	// 	} else {
-	// 		w.WriteHeader(http.StatusNotFound)
-	// 		message = fmt.Sprintf("The user '%s' is not banned", username)
-	// 		json.NewEncoder(w).Encode(message)
-	// 		return
-	// 	}
-
-	// } else {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	message = fmt.Sprintf("The user '%s' doesn't exist", username)
-	// 	json.NewEncoder(w).Encode(message)
-	// 	return
-	// }
-
 	user, err := rt.db.GetByUsername(unbannedUsername)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)

@@ -45,15 +45,5 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		}
 	}
 
-	// if _, ok := Photos[photoID]; ok {
-	// 	getUser := Users[userID]
-	// 	getUser.Profile.photos = remove(getUser.Profile.photos, photoID)
-	// 	delete(Photos, photoID)
-	// } else {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	message = "Server unable to find the photo"
-	// 	json.NewEncoder(w).Encode(message)
-	// }
-
 	_ = json.NewEncoder(w).Encode(Logged)
 }

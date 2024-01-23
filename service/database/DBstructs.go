@@ -69,9 +69,3 @@ type Stream struct {
 }
 
 var Logged = User{}
-
-// var UsernameToId = make(map[string]string)
-// var Users = make(map[string]User)
-// var Photos = make(map[string]Photo)
-// var Likes = make(map[string]Like)
-// var Comments = make(map[string]Comment)

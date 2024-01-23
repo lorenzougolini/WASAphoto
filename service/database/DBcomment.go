@@ -43,21 +43,3 @@ func (db *appdbimpl) RemoveComment(commentid string, photoid string) error {
 	}
 	return nil
 }
-
-// func (db *appdbimpl) GetPhotoComments(photoid string) ([]string, error) {
-
-// 	var comment_list []string
-// 	rows, err := db.c.Query("SELECT * FROM comments WHERE photoid = ?", photoid)
-// 	if err != nil {
-// 		return []string{}, fmt.Errorf("%v", err)
-// 	}
-// 	for rows.Next() {
-// 		var commentid string
-// 		err := rows.Scan(&commentid)
-// 		if err != nil {
-// 			return []string{}, fmt.Errorf("%v", err)
-// 		}
-// 		comment_list = append(comment_list, commentid)
-// 	}
-// 	return comment_list, nil
-// }

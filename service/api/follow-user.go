@@ -30,23 +30,6 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	// if followedId, ok := UsernameToId[username]; ok {
-
-	// 	// add folllowing
-	// 	getUser := Users[userID]
-	// 	getUser.Profile.following = append(getUser.Profile.following, username)
-
-	// 	// update followers of the folllowed user
-	// 	followedUser := Users[followedId]
-	// 	followedUser.Profile.followers = append(followedUser.Profile.followers, userID)
-
-	// } else {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	message = fmt.Sprintf("The username '%s' doesn't exist", username)
-	// 	json.NewEncoder(w).Encode(message)
-	// 	return
-	// }
-
 	followedUser, err := rt.db.GetByUsername(followedUsername)
 	// fmt.Println(followedUser)
 	if err != nil {

@@ -98,8 +98,5 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-	// Photos[newPhotoID] = newPhoto
-	// getUser := Users[userID]
-	// getUser.Profile.photos = append(getUser.Profile.photos, newPhoto.PhotoID)
 	_ = json.NewEncoder(w).Encode(newPhoto)
 }

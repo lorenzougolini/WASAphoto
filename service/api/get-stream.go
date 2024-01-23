@@ -33,6 +33,6 @@ func (rt *_router) getStream(w http.ResponseWriter, r *http.Request, ps httprout
 		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
-	_ = json.NewEncoder(w).Encode(Logged.Username)
-	w.Write(streamJson)
+	// _ = json.NewEncoder(w).Encode(Logged.Username)
+	_, _ = w.Write(streamJson)
 }

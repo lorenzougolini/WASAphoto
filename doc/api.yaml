@@ -659,12 +659,6 @@ paths:
 
   /stream:
     parameters:
-          # - name: username
-          #   in: path
-          #   description: The username of the acting user
-          #   required: true
-          #   schema: { $ref: '#/components/schemas/User/properties/userID' }
-          - name: userID
             in: query
             description: The ID of the logged user 
             required: true

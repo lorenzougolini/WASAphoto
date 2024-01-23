@@ -29,19 +29,6 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 
-	// if _, ok := UsernameToId[username]; ok {
-
-	// 	// add ban
-	// 	getUser := Users[userID]
-	// 	getUser.Profile.banned = append(getUser.Profile.banned, username)
-
-	// } else {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	message = fmt.Sprintf("The username '%s' doesn't exist", username)
-	// 	json.NewEncoder(w).Encode(message)
-	// 	return
-	// }
-
 	user, err := rt.db.GetByUsername(bannedUsername)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)

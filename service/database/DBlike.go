@@ -41,21 +41,3 @@ func (db *appdbimpl) RemoveLike(likeid string, photoid string) error {
 	}
 	return nil
 }
-
-// func (db *appdbimpl) GetPhotoLikes(photoid string) ([]string, error) {
-
-// 	var like_list []string
-// 	rows, err := db.c.Query("SELECT * FROM likes WHERE photoid = ?", photoid)
-// 	if err != nil {
-// 		return []string{}, fmt.Errorf("%v", err)
-// 	}
-// 	for rows.Next() {
-// 		var likeid string
-// 		err := rows.Scan(&likeid)
-// 		if err != nil {
-// 			return []string{}, fmt.Errorf("%v", err)
-// 		}
-// 		like_list = append(like_list, likeid)
-// 	}
-// 	return like_list, nil
-// }
