@@ -119,39 +119,79 @@ export default {
 		</div>
 
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
+        <div class="profile-container">
+            <div class="photo-container">
+                <h2 class="h2">This is the profile of {{ this.username }}</h2>
+                <p>Number of posts: {{ numberOfPosts }}, 
+                    Number of followers: {{ numberOfFollowers }}, 
+                    Number of following: {{ numberOfFollowing }}
+                </p>
+                <div v-if="this.profileJson.Posts" class="horizontal-photo-container">
+                    <div v-for="photo in this.profilePhotos" :key="photo.PhotoID" class="horizontal-photo-div">
+                        <!-- {{ photo.PhotoID }}, {{ photo.Description }}, {{ photo.DateAndTime }}
+                        <img v-bind:src="`/pictures/${photo.PhotoID}.jpg`" alt="{{photo.Description}}"> -->
 
-        <div>
-            <h2 class="h2">This is the profile of {{ this.username }}</h2>
-            <p>Number of posts: {{ numberOfPosts }}, 
-                Number of followers: {{ numberOfFollowers }}, 
-                Number of following: {{ numberOfFollowing }}
-            </p>
-            <ul v-if="this.profileJson.Posts">
-                <li v-for="photo in this.profilePhotos">
-                    <!-- {{ photo.PhotoID }}, {{ photo.Description }}, {{ photo.DateAndTime }}
-                    <img v-bind:src="`/pictures/${photo.PhotoID}.jpg`" alt="{{photo.Description}}"> -->
+                        <Photo
+                            :photoLocation="`/pictures/${photo.PhotoID}.jpg`"
+                            :photoDescription="photo.Description"
+                            :photoDate="photo.DateAndTime"
+                        />
 
-                    <Photo :photo="photo" />
+                        </div>
+                </div>
+            </div>
 
-                </li>
-            </ul>
+            <div class="new-post-container">
+                <h3>New Post</h3>
+                <form @submit.prevent="newPost">
+                    Description: <input type="text" v-model="description" /><br />
+                    Picture: <input type="file" v-on:change="fileUpload" /><br />
+                    <br>
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" @click="newPost(description, picture)">
+                            New Post
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <div>
-            <h3>New Post</h3>
-            <form @submit.prevent="newPost">
-                Description: <input type="text" v-model="description" /><br />
-                Picture: <input type="file" v-on:change="fileUpload" /><br />
-                <div class="btn-group me-2">
-					<button type="button" class="btn btn-sm btn-outline-primary" @click="newPost(description, picture)">
-						New Post
-                    </button>
-				</div>
-            </form>
-        </div>
-
 	</div>
 </template>
 
 <style>
+.horizontal-photo-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.horizontal-photo-div {
+    margin-right: 10px;
+}
+
+.profile-container {
+    display: flex;
+    flex-direction: row;
+}
+.photo-container {
+    width: 80%;
+}
+.new-post-container {
+    width: 30%;
+}
 </style>
+
+<!-- .wrap-here {
+  display: grid;
+  gap: 5px;
+  grid-auto-flow: column;
+  grid-template-rows: 1fr 1fr;
+  grid-auto-columns: 20%;
+  width: 250px;
+  overflow-x: auto;
+}
+
+.item {
+  border: 1px solid black;
+  padding: 10px;
+  margin-bottom: 5px;
+} -->
