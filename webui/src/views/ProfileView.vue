@@ -1,38 +1,50 @@
 <script>
 import Photo from '../components/Photo.vue';
+import {user} from '../stores/user.js';
 
 export default {
     components: {
         Photo,
     },
-    // props: ['logged'],
     
 	data: function() {
 		return {
 			errormsg: null,
 			loading: false,
-            userid: "2df8f964-4b00-4652-85ed-783bfe2e5f73",
-            username: "lore",
+            username: sessionStorage.getItem("username"),
+            userid: sessionStorage.getItem("userid"),
+            shownUsername: this.$route.params.username,
             profileJson: {},
             picture: null,
 		}
 	},
 
 	methods: {
-		async loadProfile () {
+		async loadProfile (shownUsername) {
 			this.loading = true;
 			this.errormsg = null;
-			try {
-				let response = await this.$axios.get("/users/" + this.username, {
-                    headers: {
-                        'Authorization': this.userid,
-                    }
-                });
-                this.profileJson = response.data;
-			} catch (e) {
-				this.errormsg = e.toString();
-			}
-			this.loading = false;
+
+            if (sessionStorage.getItem("authenticated")) {
+                
+                try {
+
+                    console.log(this.username, this.userid);
+
+                    let response = await this.$axios.get("/users/" + shownUsername, {
+                        headers: {
+                            'Authorization': this.userid,
+                        }
+                    });
+                    this.profileJson = response.data;
+
+                } catch (e) {
+                    this.errormsg = e.toString();
+                }
+                this.loading = false;
+
+            } else {
+                this.errormsg = "You are not logged in!";
+            }
 		},
 
         fileUpload(event) {
@@ -42,7 +54,8 @@ export default {
 
         async newPost(description, picture) {
 
-            console.log(description, picture);
+            // if (sessionStorage.getItem("authenticated") && sessionStorage.getItem("username") == shownUsername) {
+            // maybe the backend will do it for me without checnking here
 
             const bodyFormData = new FormData();
             bodyFormData.append('description', description);
@@ -52,7 +65,7 @@ export default {
             this.errormsg = null;
 
             try {         
-                let response = await this.$axios.post("/users/" + this.username + "/photos", bodyFormData, {
+                await this.$axios.post("/users/" + this.username + "/photos", bodyFormData, {
                     headers: {
                         'Authorization': this.userid,
                         "Content-Type": "multipart/form-data"
@@ -63,7 +76,25 @@ export default {
             }
             this.loading = false;
             console.log("New post created!");
-            this.loadProfile();
+            this.loadProfile(this.username);
+        },
+
+        async deletePost(photoID) {
+            this.loading = true;   
+            this.errormsg = null;
+
+            try {         
+                await this.$axios.delete("/users/" + this.username + "/photos/" + photoID, {
+                    headers: {
+                        'Authorization': this.userid,
+                    }
+                });
+            } catch (e) {
+                this.errormsg = e.toString();
+            }
+            this.loading = false;
+            console.log("Post deleted!");
+            this.loadProfile(this.username);
         },
 	},
 
@@ -99,7 +130,7 @@ export default {
     },
 
 	mounted() {
-		this.loadProfile()
+		this.loadProfile(this.username)
 	}
 }
 </script>
@@ -111,7 +142,7 @@ export default {
 			<h1 class="h2">Profile page</h1>
 			<div class="btn-toolbar mb-2 mb-md-0">
 				<div class="btn-group me-2">
-					<button type="button" class="btn btn-sm btn-outline-secondary" @click="loadProfile">
+					<button type="button" class="btn btn-sm btn-outline-secondary" @click="loadProfile(shownUsername)">
 						Refresh
 					</button>
 				</div>
@@ -121,7 +152,7 @@ export default {
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
         <div class="profile-container">
             <div class="photo-container">
-                <h2 class="h2">This is the profile of {{ this.username }}</h2>
+                <h2 class="h2">This is the profile of {{ shownUsername }}</h2>
                 <p>Number of posts: {{ numberOfPosts }}, 
                     Number of followers: {{ numberOfFollowers }}, 
                     Number of following: {{ numberOfFollowing }}
@@ -130,8 +161,8 @@ export default {
                     <div v-for="photo in this.profilePhotos" :key="photo.PhotoID" class="horizontal-photo-div">
                         <!-- {{ photo.PhotoID }}, {{ photo.Description }}, {{ photo.DateAndTime }}
                         <img v-bind:src="`/pictures/${photo.PhotoID}.jpg`" alt="{{photo.Description}}"> -->
-
                         <Photo
+                            :photoId="photo.PhotoID"
                             :photoLocation="`/pictures/${photo.PhotoID}.jpg`"
                             :photoDescription="photo.Description"
                             :photoDate="photo.DateAndTime"
@@ -159,6 +190,7 @@ export default {
 </template>
 
 <style>
+/* maybe do it with a grid */
 .horizontal-photo-container {
     display: flex;
     flex-direction: row;
@@ -179,19 +211,3 @@ export default {
     width: 30%;
 }
 </style>
-
-<!-- .wrap-here {
-  display: grid;
-  gap: 5px;
-  grid-auto-flow: column;
-  grid-template-rows: 1fr 1fr;
-  grid-auto-columns: 20%;
-  width: 250px;
-  overflow-x: auto;
-}
-
-.item {
-  border: 1px solid black;
-  padding: 10px;
-  margin-bottom: 5px;
-} -->

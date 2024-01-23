@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -71,7 +72,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		PhotoID:     newPhotoID,
 		UserID:      Logged.UserID,
 		PicPath:     picDir + newPhotoID + ".jpg",
-		DateAndTime: time.Now().Format("2017-07-21T17:32:28Z"),
+		DateAndTime: strconv.FormatInt(time.Now().Unix(), 10),
 		Description: description,
 	}
 

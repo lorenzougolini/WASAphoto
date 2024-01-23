@@ -1,33 +1,42 @@
 <script>
 import ProfileView from './ProfileView.vue'
+import {user} from '../stores/user.js';
+
 export default {
-	
-	components: {
-		ProfileView
-	},
+
 
 	data: function() {
 		return {
 			errormsg: null,
 			loading: false,
+			username: "",
 			logged: {},
 		}
 	},
+
 	methods: {
 		async login() {
 			this.loading = true;
 			this.errormsg = null;
+
 			try {
 				let response = await this.$axios.post("/session?username=" + this.username);
-				this.$router.push("/users/" + this.username, { // change to replace
+				
+				user.value.userid = response.data.UserID;
+				user.value.username = response.data.Username;
+				user.value.authenticated = true;
+	
+				sessionStorage.setItem("userid", user.value.userid);
+				sessionStorage.setItem("username", user.value.username);
+				sessionStorage.setItem("authenticated", user.value.authenticated);
+				// console.log(sessionStorage.userid, sessionStorage.username, sessionStorage.authenticated);
+				
+				this.$router.replace("/users/" + user.value.username, { 
 					headers: {
-						'Authorization': response.data.UserID
+						'Authorization': user.value.userid,
 					}
 				});
-				this.logged = response.data;
-				// this.logged[0] = response.data.UserID;
-				// this.logged[1] = response.data.Username;
-				console.log(this.logged);
+				
 			} catch (e) {
 				this.errormsg = e.toString();
 			}
@@ -53,9 +62,6 @@ export default {
 			</button>
 		</form>
 	</div>
-	<!-- <div>
-		<ProfileView :userid = "userid"/>
-	</div> -->
 </template>
 
 <style>

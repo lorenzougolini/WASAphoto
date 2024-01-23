@@ -1,5 +1,11 @@
 <script>
+import SessionLoginView from './SessionLoginView.vue';
+
 export default {
+	components: {
+		SessionLoginView
+	},
+
 	data: function() {
 		return {
 			errormsg: null,
@@ -47,6 +53,8 @@ export default {
 		</div>
 
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
+
+		<SessionLoginView />
 	</div>
 </template>
 
