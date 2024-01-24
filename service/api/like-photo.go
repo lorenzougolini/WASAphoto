@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -57,7 +58,7 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 		LikeID:      newLikeID,
 		PhotoID:     likingPhoto.PhotoID,
 		UserID:      Logged.UserID,
-		DateAndTime: time.Now().Format("2017-07-21T17:32:28Z"),
+		DateAndTime: strconv.FormatInt(time.Now().Unix(), 10),
 	}
 
 	like, _ := json.Marshal(newLike)

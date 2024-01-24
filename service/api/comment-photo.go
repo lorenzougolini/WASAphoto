@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -74,7 +75,7 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 		UserID:      Logged.UserID,
 		PhotoID:     commentingPhoto.PhotoID,
 		CommentText: commentText,
-		DateAndTime: time.Now().Format("2017-07-21T17:32:28Z"),
+		DateAndTime: strconv.FormatInt(time.Now().Unix(), 10),
 	}
 
 	comment, _ := json.Marshal(newComment)
