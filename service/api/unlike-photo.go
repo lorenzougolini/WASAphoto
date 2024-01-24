@@ -21,7 +21,7 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	photoID := ps.ByName("photoid")
 	likeID := ps.ByName("likeid")
 	existsPhoto, unlikedPhoto, errP := rt.db.GetPhotoById(photoID)
-	existsLike, removedLike, errL := rt.db.GetLikeById(likeID)
+	existsLike, removedLike, errL := rt.db.GetLikeByLikeId(likeID)
 	if !existsPhoto {
 		w.WriteHeader(http.StatusNotFound)
 		message = "Photo not found"

@@ -22,7 +22,7 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	photoID := ps.ByName("photoid")
 	commentID := ps.ByName("commentid")
 	existsPhoto, uncommentedPhoto, errP := rt.db.GetPhotoById(photoID)
-	existsComment, removedComment, errC := rt.db.GetCommentById(commentID)
+	existsComment, removedComment, errC := rt.db.GetCommentByCommentId(commentID)
 	if !existsPhoto {
 		w.WriteHeader(http.StatusNotFound)
 		message = "Photo not found"

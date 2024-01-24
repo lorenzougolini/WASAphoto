@@ -54,6 +54,20 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 
 	}
 
+	// check if the user has already liked the photo
+	existLike, errL := rt.db.GetLikeByUserId(Logged.UserID, likingPhoto.PhotoID)
+	if errL != nil {
+		message = "Error liking the photo"
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(message)
+		return
+	} else if existLike {
+		message = "User has already liked the photo"
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(message)
+		return
+	}
+
 	newLike := Like{
 		LikeID:      newLikeID,
 		PhotoID:     likingPhoto.PhotoID,

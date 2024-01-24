@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (db *appdbimpl) GetCommentById(id string) (bool, Comment, error) {
+func (db *appdbimpl) GetCommentByCommentId(id string) (bool, Comment, error) {
 
 	var comment Comment
 	err := db.c.QueryRow("SELECT * FROM comments WHERE commentid = ?", id).Scan(&comment.CommentID, &comment.PhotoID, &comment.UserID, &comment.CommentText, &comment.DateAndTime)

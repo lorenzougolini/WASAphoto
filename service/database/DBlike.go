@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (db *appdbimpl) GetLikeById(id string) (bool, Like, error) {
+func (db *appdbimpl) GetLikeByLikeId(id string) (bool, Like, error) {
 
 	var like Like
 	err := db.c.QueryRow("SELECT * FROM likes WHERE likeid = ?", id).Scan(&like.LikeID, &like.PhotoID, &like.UserID, &like.DateAndTime)
@@ -13,6 +13,16 @@ func (db *appdbimpl) GetLikeById(id string) (bool, Like, error) {
 		return false, like, fmt.Errorf("error retreiving the like")
 	}
 	return true, like, nil
+}
+
+func (db *appdbimpl) GetLikeByUserId(userid string, photoid string) (bool, error) {
+
+	var count int
+	err := db.c.QueryRow("SELECT COUNT(*) FROM likes WHERE photoid = ? AND userid = ?", photoid, userid).Scan(&count)
+	if err != nil {
+		return count > 0, fmt.Errorf("error retreiving the like")
+	}
+	return count > 0, nil
 }
 
 func (db *appdbimpl) AddLike(like string) error {

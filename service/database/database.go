@@ -56,11 +56,12 @@ type AppDatabase interface {
 	RemovePhoto(photoid string, userid string) error
 
 	AddLike(like string) error
-	GetLikeById(likeid string) (bool, Like, error)
+	GetLikeByLikeId(likeid string) (bool, Like, error)
+	GetLikeByUserId(userid string, photoid string) (bool, error)
 	RemoveLike(likeid string, photoid string) error
 
 	AddComment(comment string) error
-	GetCommentById(id string) (bool, Comment, error)
+	GetCommentByCommentId(id string) (bool, Comment, error)
 	RemoveComment(commentid string, photoid string) error
 
 	GetStream(userid string) (Stream, error)
