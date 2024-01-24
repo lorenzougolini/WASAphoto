@@ -4,7 +4,6 @@ import {user} from '../stores/user.js';
 
 export default {
 
-
 	data: function() {
 		return {
 			errormsg: null,
@@ -29,7 +28,6 @@ export default {
 				sessionStorage.setItem("userid", user.value.userid);
 				sessionStorage.setItem("username", user.value.username);
 				sessionStorage.setItem("authenticated", user.value.authenticated);
-				// console.log(sessionStorage.userid, sessionStorage.username, sessionStorage.authenticated);
 				
 				this.$router.replace("/users/" + user.value.username, { 
 					headers: {

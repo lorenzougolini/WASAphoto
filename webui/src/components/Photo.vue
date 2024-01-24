@@ -7,6 +7,9 @@ export default {
         photoLocation: String,
         photoDescription: String,
         photoDate: String,
+        photoAuthor: String,
+        photoLikes: Array,
+        photoComments: Array
     },
 
     methods: {
@@ -14,11 +17,29 @@ export default {
             let normalDate = new Date(unixDate * 1000);
             return normalDate.toLocaleString();
         }
+    },
+
+    computed: {
+        photoLikesNum() {
+            if (photoLikes == null) {
+                return 0;
+            }
+            return photoLikes.length;
+        },
+        photoCommentsNum() {
+            if (photoComments == null) {
+                return 0;
+            }
+            return photoComments.length;
+        }
     }
 }
 </script>
 <template>
     <div class="photo-card">
+        <div class="author-container">
+            <p>{{ photoAuthor }}</p>
+        </div>
         <div class="image-container">
             <img :src="photoLocation" :alt="photoDescription"><br>
         </div>
@@ -26,7 +47,8 @@ export default {
             <br>
             <p>{{ photoDescription }}</p>
             <p>{{ formatDateFromUnix(photoDate) }}</p>
-
+            <p>Likes: {{ photoLikesNum }}</p>
+            <p>Comments: {{ photoCommentsNum }}</p>
             <div class="photo-delete">
                 <!-- <button class="btn btn-sm btn-outline-danger" @click="this.$parent.deletePost(photoId)">Delete</button> -->
                 <button class="btn btn-sm btn-outline-danger" @click="$emit('delete-post')">Delete</button>
@@ -48,7 +70,7 @@ export default {
     justify-content: space-between;
 }
 .image-container {
-    height: 200px;
+    height: 300px;
     overflow: hidden;
 }
 .image-container img {

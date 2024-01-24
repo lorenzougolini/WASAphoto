@@ -1,5 +1,6 @@
 <script>
 import Photo from '../components/Photo.vue';
+import LoadingSpinner from '../components/LoadingSpinner.vue';
 import {user} from '../stores/user.js';
 
 export default {
@@ -28,7 +29,7 @@ export default {
                 
                 try {
 
-                    console.log(this.username, this.userid);
+                    // console.log(this.username, this.userid);
 
                     let response = await this.$axios.get("/users/" + shownUsername, {
                         headers: {
@@ -53,9 +54,6 @@ export default {
         },
 
         async newPost(description, picture) {
-
-            // if (sessionStorage.getItem("authenticated") && sessionStorage.getItem("username") == shownUsername) {
-            // maybe the backend will do it for me without checking here
 
             const bodyFormData = new FormData();
             bodyFormData.append('description', description);
@@ -151,7 +149,8 @@ export default {
 
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
         <div class="profile-container">
-            <div class="photo-container">
+            <LoadingSpinner :loading="loading" />
+            <div v-if="!loading" class="photo-container">
                 <h2 class="h2">This is the profile of {{ shownUsername }}</h2>
                 <p>Number of posts: {{ numberOfPosts }}, 
                     Number of followers: {{ numberOfFollowers }}, 
@@ -159,20 +158,18 @@ export default {
                 </p>
                 <div v-if="this.profileJson.Posts" class="horizontal-photo-container">
                     <div v-for="photo in this.profilePhotos" :key="photo.PhotoID" class="horizontal-photo-div">
-                        <!-- {{ photo.PhotoID }}, {{ photo.Description }}, {{ photo.DateAndTime }}
-                        <img v-bind:src="`/pictures/${photo.PhotoID}.jpg`" alt="{{photo.Description}}"> -->
+
                         <Photo @delete-post="deletePost(photo.PhotoID)"
                             :photoLocation="`/pictures/${photo.PhotoID}.jpg`"
                             :photoDescription="photo.Description"
                             :photoDate="photo.DateAndTime"
                         />
-                            <!-- :photoId="photo.PhotoID" -->
 
                         </div>
                 </div>
             </div>
 
-            <div class="new-post-container">
+            <div v-if="shownUsername == this.username" class="new-post-container">
                 <h3>New Post</h3>
                 <form @submit.prevent="newPost">
                     Description: <input type="text" v-model="description" /><br />
