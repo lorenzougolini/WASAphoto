@@ -106,12 +106,12 @@ func New(db *sql.DB) (AppDatabase, error) {
 	if errors.Is(err2, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE IF NOT EXISTS photos (
 			photoid TEXT NOT NULL PRIMARY KEY, 
-			userid TEXT NOT NULL, 
+			userid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE, 
 			picPath TEXT NOT NULL, 
 			dateAndTime TEXT NOT NULL,
-			description TEXT,
-			FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE
+			description TEXT
 			);`
+		// FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE
 		_, err2 = db.Exec(sqlStmt)
 		if err2 != nil {
 			return nil, fmt.Errorf("error2 creating database structure: %w", err2)
@@ -122,12 +122,12 @@ func New(db *sql.DB) (AppDatabase, error) {
 	if errors.Is(err3, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE IF NOT EXISTS likes (
 			likeid TEXT NOT NULL PRIMARY KEY,
-			photoid TEXT NOT NULL, 
-			userid TEXT NOT NULL,
-			dateAndTime TEXT NOT NULL,
-			FOREIGN KEY (photoid) REFERENCES photos(photoid) ON DELETE CASCADE,
-			FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE
+			photoid TEXT NOT NULL REFERENCES photos(photoid) ON DELETE CASCADE, 
+			userid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
+			dateAndTime TEXT NOT NULL
 			);`
+		// FOREIGN KEY (photoid) REFERENCES photos(photoid) ON DELETE CASCADE,
+		// FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE
 		_, err3 = db.Exec(sqlStmt)
 		if err3 != nil {
 			return nil, fmt.Errorf("error3 creating database structure: %w", err3)
@@ -138,13 +138,13 @@ func New(db *sql.DB) (AppDatabase, error) {
 	if errors.Is(err4, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE IF NOT EXISTS comments (
 			commentid TEXT NOT NULL PRIMARY KEY,
-			photoid TEXT NOT NULL, 
-			userid TEXT NOT NULL,
+			photoid TEXT NOT NULL REFERENCES photos(photoid) ON DELETE CASCADE, 
+			userid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
 			commentText TEXT NOT NULL,
-			dateAndTime TEXT NOT NULL,
-			FOREIGN KEY (photoid) REFERENCES photos(photoid) ON DELETE CASCADE,
-			FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE
+			dateAndTime TEXT NOT NULL
 			);`
+		// FOREIGN KEY (photoid) REFERENCES photos(photoid) ON DELETE CASCADE,
+		// FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE
 		_, err4 = db.Exec(sqlStmt)
 		if err4 != nil {
 			return nil, fmt.Errorf("error4 creating database structure: %w", err4)
@@ -154,10 +154,10 @@ func New(db *sql.DB) (AppDatabase, error) {
 	// follows table
 	if errors.Is(err5, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE IF NOT EXISTS follows (
-			userid TEXT NOT NULL,
-			followedid TEXT NOT NULL,
-			FOREIGN KEY (userid) REFERENCES users(userid)
+			userid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
+			followedid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE
 			);`
+		// FOREIGN KEY (userid) REFERENCES users(userid)
 		_, err5 = db.Exec(sqlStmt)
 		if err5 != nil {
 			return nil, fmt.Errorf("error5 creating database structure: %w", err5)
@@ -167,20 +167,15 @@ func New(db *sql.DB) (AppDatabase, error) {
 	// bans table
 	if errors.Is(err6, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE IF NOT EXISTS bans (
-			userid TEXT NOT NULL,
-			bannedid TEXT NOT NULL, 
-			FOREIGN KEY (userid) REFERENCES users(userid)
+			userid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
+			bannedid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE
 			);`
+		// FOREIGN KEY (userid) REFERENCES users(userid)
 		_, err6 = db.Exec(sqlStmt)
 		if err6 != nil {
 			return nil, fmt.Errorf("error4 creating database structure: %w", err6)
 		}
 	}
-
-	// _, err := db.Exec("PRAGMA foreign_keys = ON")
-	// if err != nil {
-	// 	return &appdbimpl{c: db}, fmt.Errorf("%v", err)
-	// }
 
 	return &appdbimpl{
 		c: db,

@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -27,22 +29,28 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		w.WriteHeader(http.StatusNotFound)
 		message = "Server unable to find the photo"
 		_ = json.NewEncoder(w).Encode(message)
+		return
+	}
 
-	} else {
-		if retrievedPhoto.UserID != Logged.UserID {
-			w.WriteHeader(http.StatusUnauthorized)
-			message = "User in not authorized to remove photos from this profile"
-			_ = json.NewEncoder(w).Encode(message)
-			return
+	if retrievedPhoto.UserID != Logged.UserID {
+		w.WriteHeader(http.StatusUnauthorized)
+		message = "User in not authorized to remove photos from this profile"
+		_ = json.NewEncoder(w).Encode(message)
+		return
+	}
 
-		} else {
-			err = rt.db.RemovePhoto(Logged.UserID, retrievedPhoto.PhotoID)
-			if err != nil {
-				w.WriteHeader(http.StatusUnauthorized)
-				_ = json.NewEncoder(w).Encode(err)
-				return
-			}
-		}
+	err = rt.db.RemovePhoto(Logged.UserID, retrievedPhoto.PhotoID)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	photoDir := "./webui/public/pictures/" + retrievedPhoto.PhotoID + ".jpg"
+	err = os.Remove(photoDir)
+	if err != nil {
+		fmt.Println("Error removing file:", err)
+		return
 	}
 
 	_ = json.NewEncoder(w).Encode(Logged)

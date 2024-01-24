@@ -1,5 +1,7 @@
 <script>
 export default {
+    emits: ['delete-post'],
+
     props:{
         photoId: String,
         photoLocation: String,
@@ -26,7 +28,8 @@ export default {
             <p>{{ formatDateFromUnix(photoDate) }}</p>
 
             <div class="photo-delete">
-                <button class="btn btn-sm btn-outline-danger" @click="this.$parent.deletePost(photoId)">Delete</button>
+                <!-- <button class="btn btn-sm btn-outline-danger" @click="this.$parent.deletePost(photoId)">Delete</button> -->
+                <button class="btn btn-sm btn-outline-danger" @click="$emit('delete-post')">Delete</button>
             </div>
         </div>
     </div>

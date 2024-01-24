@@ -55,7 +55,7 @@ export default {
         async newPost(description, picture) {
 
             // if (sessionStorage.getItem("authenticated") && sessionStorage.getItem("username") == shownUsername) {
-            // maybe the backend will do it for me without checnking here
+            // maybe the backend will do it for me without checking here
 
             const bodyFormData = new FormData();
             bodyFormData.append('description', description);
@@ -65,7 +65,7 @@ export default {
             this.errormsg = null;
 
             try {         
-                await this.$axios.post("/users/" + this.username + "/photos", bodyFormData, {
+                await this.$axios.post("/users/" + this.username + "/photos/", bodyFormData, {
                     headers: {
                         'Authorization': this.userid,
                         "Content-Type": "multipart/form-data"
@@ -161,12 +161,12 @@ export default {
                     <div v-for="photo in this.profilePhotos" :key="photo.PhotoID" class="horizontal-photo-div">
                         <!-- {{ photo.PhotoID }}, {{ photo.Description }}, {{ photo.DateAndTime }}
                         <img v-bind:src="`/pictures/${photo.PhotoID}.jpg`" alt="{{photo.Description}}"> -->
-                        <Photo
-                            :photoId="photo.PhotoID"
+                        <Photo @delete-post="deletePost(photo.PhotoID)"
                             :photoLocation="`/pictures/${photo.PhotoID}.jpg`"
                             :photoDescription="photo.Description"
                             :photoDate="photo.DateAndTime"
                         />
+                            <!-- :photoId="photo.PhotoID" -->
 
                         </div>
                 </div>
