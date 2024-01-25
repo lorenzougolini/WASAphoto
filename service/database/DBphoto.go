@@ -40,3 +40,67 @@ func (db *appdbimpl) RemovePhoto(userid string, photoid string) error {
 	}
 	return nil
 }
+
+func (db *appdbimpl) GetPhotoData(photoid string) (PhotoData, error) {
+
+	var photodata PhotoData
+	err := db.c.QueryRow("SELECT userid, description, dateAndTime FROM photos WHERE photoid = ?", photoid).Scan(&photodata.Author, &photodata.Description, &photodata.DateAndTime)
+	if err != nil {
+		return photodata, fmt.Errorf("error retreiving the photo data")
+	}
+
+	// get author
+	if author, err := db.GetById(photodata.Author); err != nil {
+		return photodata, fmt.Errorf("error retreiving the photo data")
+	} else {
+		photodata.Author = author.Username
+	}
+
+	// get likes
+	if likes, err := db.c.Query("SELECT userid FROM likes WHERE photoid = ?", photoid); err != nil {
+		return photodata, fmt.Errorf("error retreiving the photo data")
+	} else {
+		defer likes.Close()
+		for likes.Next() {
+			var idWhoLikes string
+			if err := likes.Scan(&idWhoLikes); err != nil {
+				return photodata, fmt.Errorf("error retreiving the photo data")
+			}
+			if userWhoLikes, err := db.GetById(idWhoLikes); err != nil {
+				return photodata, fmt.Errorf("error retreiving the photo data")
+			} else {
+				photodata.Likes = append(photodata.Likes, userWhoLikes.Username)
+			}
+		}
+	}
+
+	// get comments
+	if comments, err := db.c.Query("SELECT userid, commentText, dateAndTime FROM comments WHERE photoid = ?", photoid); err != nil {
+		return photodata, fmt.Errorf("error retreiving the photo data")
+	} else {
+		defer comments.Close()
+		for comments.Next() {
+			var comment struct {
+				Username    string
+				CommentText string
+				DateAndTime string
+			}
+
+			if err := comments.Scan(&comment.Username, &comment.CommentText, &comment.DateAndTime); err != nil {
+				return photodata, fmt.Errorf("error retreiving the photo data")
+			} else {
+
+				if userWhoComments, err := db.GetById(comment.Username); err != nil {
+					return photodata, fmt.Errorf("error retreiving the photo data")
+				} else {
+					comment.Username = userWhoComments.Username
+				}
+			}
+			photodata.Comments = append(photodata.Comments, comment)
+		}
+	}
+	photodata.PhotoID = photoid
+
+	return photodata, nil
+
+}

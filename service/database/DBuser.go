@@ -64,74 +64,115 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 	profile := Profile{}
 
 	// get photos
-	rows, err := db.c.Query("SELECT photoid, dateAndTime, description FROM photos WHERE userid = ? ORDER BY dateAndTime DESC;", userid)
+	rows, err := db.c.Query("SELECT photoid FROM photos WHERE userid = ? ORDER BY dateAndTime DESC;", userid)
 	if err != nil {
 		return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		photo := struct {
-			PhotoID     string
-			Description string
-			DateAndTime string
-		}{}
 
-		if err := rows.Scan(&photo.PhotoID, &photo.DateAndTime, &photo.Description); err != nil {
+		var photoid string
+
+		if err := rows.Scan(&photoid); err != nil {
 			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 		}
 
-		profile.Posts.Photos = append(profile.Posts.Photos, photo)
-	}
-	profile.Posts.NumberOfPosts = len(profile.Posts.Photos)
-
-	// get followers
-	rows, err = db.c.Query("SELECT userid FROM follows WHERE followedid = ?", userid)
-	if err != nil {
-		return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var followerid string
-
-		if err := rows.Scan(&followerid); err != nil {
+		photoData, err := db.GetPhotoData(photoid)
+		if err != nil {
 			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 		}
+		profile.Posts = append(profile.Posts, photoData)
 
-		if user, err := db.GetById(followerid); err != nil {
+		// photo := struct {
+		// 	PhotoID     string
+		// 	Description string
+		// 	DateAndTime string
+		// 	Likes       []string
+		// 	Comments    []struct {
+		// 		Username    string
+		// 		CommentText string
+		// 		DateAndTime string
+		// 	}
+		// }{}
+
+		// if err := rows.Scan(&photo.PhotoID, &photo.DateAndTime, &photo.Description); err != nil {
+		// 	return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
+		// }
+
+		// rows2, err := db.c.Query("SELECT userid FROM likes WHERE photoid = ?", photo.PhotoID)
+		// if err != nil {
+		// 	return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
+		// }
+		// defer rows2.Close()
+
+		// for rows2.Next() {
+		// 	var idWhoLikes string
+
+		// 	if err := rows2.Scan(&idWhoLikes); err != nil {
+		// 		return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
+		// 	}
+
+		// 	if userWhoLikes, err := db.GetById(idWhoLikes); err != nil {
+		// 		return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
+
+		// 	} else {
+		// 		photo.Likes = append(photo.Likes, userWhoLikes.Username)
+		// 	}
+
+		// 	profile.Posts.Photos = append(profile.Posts.Photos, photo)
+		// }
+		// profile.Posts.NumberOfPosts = len(profile.Posts.Photos)
+
+		// get followers
+		rows, err = db.c.Query("SELECT userid FROM follows WHERE followedid = ?", userid)
+		if err != nil {
 			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
-
-		} else {
-			profile.Followers.Usernames = append(profile.Followers.Usernames, user.Username)
 		}
-	}
-	profile.Followers.NumberOfFollowers = len(profile.Followers.Usernames)
+		defer rows.Close()
 
-	// get following
-	rows, err = db.c.Query("SELECT followedid FROM follows WHERE userid = ?", userid)
-	if err != nil {
-		return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
-	}
-	defer rows.Close()
+		for rows.Next() {
+			var followerid string
 
-	for rows.Next() {
-		var followedid string
+			if err := rows.Scan(&followerid); err != nil {
+				return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
+			}
 
-		if err := rows.Scan(&followedid); err != nil {
+			if user, err := db.GetById(followerid); err != nil {
+				return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
+
+			} else {
+				profile.Followers.Usernames = append(profile.Followers.Usernames, user.Username)
+			}
+		}
+		profile.Followers.NumberOfFollowers = len(profile.Followers.Usernames)
+
+		// get following
+		rows, err = db.c.Query("SELECT followedid FROM follows WHERE userid = ?", userid)
+		if err != nil {
 			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
-
 		}
+		defer rows.Close()
 
-		if user, err := db.GetById(followedid); err != nil {
-			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
+		for rows.Next() {
+			var followedid string
 
-		} else {
-			profile.Following.Usernames = append(profile.Following.Usernames, user.Username)
+			if err := rows.Scan(&followedid); err != nil {
+				return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 
+			}
+
+			if user, err := db.GetById(followedid); err != nil {
+				return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
+
+			} else {
+				profile.Following.Usernames = append(profile.Following.Usernames, user.Username)
+
+			}
 		}
+		profile.Following.NumberOfFollowing = len(profile.Following.Usernames)
+
 	}
-	profile.Following.NumberOfFollowing = len(profile.Following.Usernames)
 
 	return profile, nil
 }

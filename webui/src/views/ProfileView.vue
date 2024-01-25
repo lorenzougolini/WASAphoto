@@ -105,22 +105,22 @@ export default {
             }
         },
         numberOfFollowers() {
-            if (this.profileJson.Posts){
-                return this.profileJson.Followers.NumberOfFollowers
+            if (this.profileJson.Followers){
+                return this.profileJson.Followers.length
             } else {
                 return 0;
             }
         },
         numberOfFollowing() {
-            if (this.profileJson.Posts){
-                return this.profileJson.Followers.NumberOfFollowing
+            if (this.profileJson.Following){
+                return this.profileJson.Following.length
             } else {
                 return 0;
             }
         },
         profilePhotos() {
             if (this.profileJson.Posts){
-                return this.profileJson.Posts.Photos
+                return this.profileJson.Posts
             } else {
                 return [];
             }
@@ -163,6 +163,8 @@ export default {
                             :photoLocation="`/pictures/${photo.PhotoID}.jpg`"
                             :photoDescription="photo.Description"
                             :photoDate="photo.DateAndTime"
+                            :photoLikes="photo.Likes"
+                            :photoComments="photo.Comments"
                         />
 
                         </div>

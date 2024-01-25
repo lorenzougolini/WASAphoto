@@ -3,11 +3,11 @@ export default {
     emits: ['delete-post'],
 
     props:{
+        photoAuthor: String,
         photoId: String,
         photoLocation: String,
         photoDescription: String,
         photoDate: String,
-        photoAuthor: String,
         photoLikes: Array,
         photoComments: Array
     },

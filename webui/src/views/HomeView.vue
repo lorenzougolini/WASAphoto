@@ -72,8 +72,8 @@ export default {
 		<div class="stream-container">
 				<div v-for="photo in streamJson.Photos" :key="photo.PhotoID">
 					<Photo 
-						:photoLocation="`/pictures/${photo.PhotoID}.jpg`" 
 						:photoAuthor="photo.Author"
+						:photoLocation="`/pictures/${photo.PhotoID}.jpg`" 
 						:photoDescription="photo.Description"
                         :photoDate="photo.DateAndTime"
 						:photoLikes="photo.Likes.Usernames"
