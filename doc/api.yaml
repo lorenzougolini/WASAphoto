@@ -659,6 +659,7 @@ paths:
 
   /stream:
     parameters:
+          - name: userID
             in: query
             description: The ID of the logged user 
             required: true
