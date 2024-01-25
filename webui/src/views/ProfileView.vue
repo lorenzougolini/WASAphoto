@@ -99,21 +99,21 @@ export default {
     computed: {
         numberOfPosts() {
             if (this.profileJson.Posts){
-                return this.profileJson.Posts.NumberOfPosts
+                return this.profileJson.Posts.length
             } else {
                 return 0;
             }
         },
         numberOfFollowers() {
             if (this.profileJson.Followers){
-                return this.profileJson.Followers.length
+                return this.profileJson.Followers.NumberOfFollowers
             } else {
                 return 0;
             }
         },
         numberOfFollowing() {
             if (this.profileJson.Following){
-                return this.profileJson.Following.length
+                return this.profileJson.Following.NumberOfFollowing
             } else {
                 return 0;
             }
@@ -160,6 +160,7 @@ export default {
                     <div v-for="photo in this.profilePhotos" :key="photo.PhotoID" class="horizontal-photo-div">
 
                         <Photo @delete-post="deletePost(photo.PhotoID)"
+                            :photoAuthor="photo.Author"
                             :photoLocation="`/pictures/${photo.PhotoID}.jpg`"
                             :photoDescription="photo.Description"
                             :photoDate="photo.DateAndTime"

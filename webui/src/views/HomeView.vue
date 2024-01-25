@@ -70,17 +70,17 @@ export default {
 			<LoadingSpinner :loading="loading" />
 		</div>
 		<div class="stream-container">
-				<div v-for="photo in streamJson.Photos" :key="photo.PhotoID">
-					<Photo 
-						:photoAuthor="photo.Author"
-						:photoLocation="`/pictures/${photo.PhotoID}.jpg`" 
-						:photoDescription="photo.Description"
-                        :photoDate="photo.DateAndTime"
-						:photoLikes="photo.Likes.Usernames"
-						:photoComments="photo.Comments.Comment"
-						/>
-				</div>
+			<div v-for="photo in this.streamJson.Posts" :key="photo.PhotoID">
+				<Photo 
+					:photoAuthor="photo.Author"
+					:photoLocation="`/pictures/${photo.PhotoID}.jpg`" 
+					:photoDescription="photo.Description"
+					:photoDate="photo.DateAndTime"
+					:photoLikes="photo.Likes"
+					:photoComments="photo.Comments"
+					/>
 			</div>
+		</div>
 		
 	</div>
 </template>

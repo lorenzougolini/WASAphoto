@@ -1,5 +1,12 @@
 <script>
+import { RouterLink } from 'vue-router';
+
 export default {
+
+    components: {
+        RouterLink,
+    },
+
     emits: ['delete-post'],
 
     props:{
@@ -16,21 +23,38 @@ export default {
         formatDateFromUnix(unixDate) {
             let normalDate = new Date(unixDate * 1000);
             return normalDate.toLocaleString();
-        }
+        },
+
+        async loadProfile (photoAuthor) {
+			this.loading = true;
+			this.errormsg = null;
+            try {
+                this.$router.push("/users/" + photoAuthor, { 
+					headers: {
+						'Authorization': sessionStorage.getItem("userid"),
+					}
+				});
+
+            } catch (e) {
+                this.errormsg = e.toString();
+            }
+            this.loading = false;
+
+		},
     },
 
     computed: {
         photoLikesNum() {
-            if (photoLikes == null) {
+            if (!this.photoLikes) {
                 return 0;
             }
-            return photoLikes.length;
+            return this.photoLikes.length;
         },
         photoCommentsNum() {
-            if (photoComments == null) {
+            if (!this.photoComments) {
                 return 0;
             }
-            return photoComments.length;
+            return this.photoComments.length;
         }
     }
 }
@@ -38,7 +62,11 @@ export default {
 <template>
     <div class="photo-card">
         <div class="author-container">
-            <p>{{ photoAuthor }}</p>
+            <div @click="loadProfile(photoAuthor)">
+                <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
+                {{ photoAuthor }}
+            </div>
+            <!-- <p>{{ photoAuthor }}</p> -->
         </div>
         <div class="image-container">
             <img :src="photoLocation" :alt="photoDescription"><br>
@@ -58,6 +86,13 @@ export default {
 </template>
 
 <style>
+.author-container {
+    border: 1px solid gray;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+}
 .photo-card {
     border: 1px solid black;
     border-radius: 5px;
