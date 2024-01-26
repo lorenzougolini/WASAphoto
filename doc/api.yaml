@@ -90,7 +90,7 @@ components:
           minLength: 67
           maxLength: 1000000000
         dateAndTime:
-          description: The date and huors when the image was uploaded
+          description: The date and hour when the image was uploaded
           type: string
           format: date-time
           example: "2017-07-21T17:32:28Z"
@@ -183,6 +183,12 @@ tags:
 
 paths:
   /session:
+    parameters: 
+      - name: username
+        in: query
+        description: The username of the logging user 
+        required: true
+        schema: { $ref: '#/components/schemas/User/properties/username' }
     post:
       tags: ["Login"]
       summary: Logs in the user
@@ -191,12 +197,6 @@ paths:
         and an identifier is returned.
         If the user exists, the user identifier is returned.
       operationId: doLogin
-      requestBody:
-        description: User details
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/User/properties/username' }
-        required: true
       responses:
         '201':
           description: User log-in action successful
@@ -204,6 +204,12 @@ paths:
             application/json:
               schema:
                 { $ref: '#/components/schemas/User' }
+        '400':
+          description: Invalid username provided
+          content:
+            application/json:
+              schema:
+                { $ref: '#/components/schemas/User' }   
 
   /users/{username}:
     parameters:
@@ -216,7 +222,7 @@ paths:
           in: path
           description: The username of the searched user
           required: true
-          schema: { $ref: '#/components/schemas/User/properties/userID' }
+          schema: { $ref: '#/components/schemas/User/properties/username' }
     put:
       tags: ["Settings"]
       operationId: setMyUserName
@@ -268,13 +274,13 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/User' }
 
-  /users/{username}/photos/:
+  /users/{username}/photos:
     parameters:
         - name: username
           in: path
           description: The username of the acting user
           required: true
-          schema: { $ref: '#/components/schemas/User/properties/userID' }
+          schema: { $ref: '#/components/schemas/User/properties/username' }
         - name: userID
           in: query
           description: The ID of the logged user 
@@ -489,7 +495,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/User' }
 
-  /photos/{photoID}/likes/:
+  /photos/{photoID}/likes:
     parameters:
         - name: photoID
           in: path
@@ -566,7 +572,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/User' }
 
-  /photos/{photoID}/comments/:
+  /photos/{photoID}/comments:
     parameters:
         - name: userID
           in: query
