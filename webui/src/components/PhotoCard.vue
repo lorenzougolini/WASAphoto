@@ -22,7 +22,7 @@ export default {
     methods: {
         formatDateFromUnix(unixDate) {
             let normalDate = new Date(unixDate * 1000);
-            return normalDate.toLocaleString();
+            return normalDate.toLocaleString('it-EU');
         },
 
         async loadProfile (photoAuthor) {
@@ -66,7 +66,6 @@ export default {
                 <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
                 {{ photoAuthor }}
             </div>
-            <!-- <p>{{ photoAuthor }}</p> -->
         </div>
         <div class="image-container">
             <img :src="photoLocation" :alt="photoDescription"><br>
@@ -79,33 +78,38 @@ export default {
             <p>Comments: {{ photoCommentsNum }}</p>
             <div class="photo-delete">
                 <!-- <button class="btn btn-sm btn-outline-danger" @click="this.$parent.deletePost(photoId)">Delete</button> -->
-                <button class="btn btn-sm btn-outline-danger" @click="$emit('delete-post')">Delete</button>
+                <button class="btn btn-sm btn-outline-danger" @search="$emit('delete-post')">Delete</button>
             </div>
         </div>
     </div>
 </template>
 
-<style>
-.author-container {
-    border: 1px solid gray;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    cursor: pointer;
-}
+<style scoped>
 .photo-card {
     border: 1px solid black;
     border-radius: 5px;
     padding: 5px;
     margin: 5px;
-    width: 300px;
+    width: 500px;
     /* height: 100%; */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
+.author-container {
+    border: 1px solid gray;
+    border-radius: 5px;
+    display: flex;
+    cursor: pointer;
+}
+.author-container div {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    font-size:16px
+}
 .image-container {
-    height: 300px;
+    height: 500px;
     overflow: hidden;
 }
 .image-container img {

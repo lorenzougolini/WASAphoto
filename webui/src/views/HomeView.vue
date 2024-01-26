@@ -1,12 +1,14 @@
 <script>
 import SessionLoginView from './SessionLoginView.vue';
-import Photo from '../components/Photo.vue';
+import PhotoCard from '../components/PhotoCard.vue';
+import SearchBar from '../components/SearchBar.vue';
 import {user} from '../stores/user.js';
 
 export default {
 	components: {
 		SessionLoginView,
-		Photo,
+		PhotoCard,
+		SearchBar,
 	},
 
 	data: function() {
@@ -43,10 +45,12 @@ export default {
 </script>
 
 <template>
-	<div>
-		<div
-			class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+	<div >
+		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
 			<h1 class="h2">Home page</h1>
+			<div class="d-flex align-items-center">
+				<SearchBar />
+			</div>
 			<div class="btn-toolbar mb-2 mb-md-0">
 				<div class="btn-group me-2">
 					<button type="button" class="btn btn-sm btn-outline-secondary" @click="refresh">
@@ -71,7 +75,7 @@ export default {
 		</div>
 		<div class="stream-container">
 			<div v-for="photo in this.streamJson.Posts" :key="photo.PhotoID">
-				<Photo 
+				<PhotoCard 
 					:photoAuthor="photo.Author"
 					:photoLocation="`/pictures/${photo.PhotoID}.jpg`" 
 					:photoDescription="photo.Description"

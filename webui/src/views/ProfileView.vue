@@ -1,11 +1,11 @@
 <script>
-import Photo from '../components/Photo.vue';
+import PhotoCard from '../components/PhotoCard.vue';
 import LoadingSpinner from '../components/LoadingSpinner.vue';
 import {user} from '../stores/user.js';
 
 export default {
     components: {
-        Photo,
+        PhotoCard,
     },
     
 	data: function() {
@@ -30,7 +30,6 @@ export default {
                 try {
 
                     // console.log(this.username, this.userid);
-
                     let response = await this.$axios.get("/users/" + shownUsername, {
                         headers: {
                             'Authorization': this.userid,
@@ -40,6 +39,7 @@ export default {
 
                 } catch (e) {
                     this.errormsg = e.toString();
+                    this.$router.go(-1);
                 }
                 this.loading = false;
 
@@ -48,13 +48,8 @@ export default {
             }
 		},
 
-        fileUpload(event) {
-            console.log(event.target.files[0]);
-            this.picture = event.target.files[0];
-        },
-
         async newPost(description, picture) {
-
+            
             const bodyFormData = new FormData();
             bodyFormData.append('description', description);
             bodyFormData.append('picture', picture);
@@ -80,7 +75,7 @@ export default {
         async deletePost(photoID) {
             this.loading = true;   
             this.errormsg = null;
-
+            
             try {         
                 await this.$axios.delete("/users/" + this.username + "/photos/" + photoID, {
                     headers: {
@@ -94,8 +89,58 @@ export default {
             console.log("Post deleted!");
             this.loadProfile(this.username);
         },
-	},
 
+        async followUser(){
+            this.loading = true;   
+            this.errormsg = null;
+            
+            try {        
+                await this.$axios.put("/users/" + this.username + "/followers/" + this.shownUsername, null, {
+                    headers: {
+                        'Authorization': this.userid,
+                    }
+                });
+                console.log("User followed!");
+            } catch (e) {
+                this.errormsg = e.toString();
+            }
+            this.loading = false;
+            this.loadProfile(this.shownUsername);
+        },
+
+        async unfollowUser() {
+            this.loading = true;   
+            this.errormsg = null;
+            
+            try {        
+                await this.$axios.delete("/users/" + this.username + "/followers/" + this.shownUsername, {
+                    headers: {
+                        'Authorization': this.userid,
+                    }
+                });
+            } catch (e) {
+                this.errormsg = e.toString();
+            }
+            this.loading = false;
+            console.log("User unfollowed!");
+            this.loadProfile(this.shownUsername);            
+        },
+        
+        fileUpload(event) {
+            console.log(event.target.files[0]);
+            this.picture = event.target.files[0];
+        },
+
+        followedByYou() {
+            try {
+                var followed = this.profileJson.Followers.Usernames.includes(this.username);
+            } catch (e) {
+                var followed = false;
+            }
+            return followed;
+        },
+	},
+    
     computed: {
         numberOfPosts() {
             if (this.profileJson.Posts){
@@ -152,14 +197,14 @@ export default {
             <LoadingSpinner :loading="loading" />
             <div v-if="!loading" class="photo-container">
                 <h2 class="h2">This is the profile of {{ shownUsername }}</h2>
-                <p>Number of posts: {{ numberOfPosts }}, 
-                    Number of followers: {{ numberOfFollowers }}, 
-                    Number of following: {{ numberOfFollowing }}
+                <p>Posts: {{ numberOfPosts }}, 
+                    Followers: {{ numberOfFollowers }}, 
+                    Following: {{ numberOfFollowing }}
                 </p>
                 <div v-if="this.profileJson.Posts" class="horizontal-photo-container">
                     <div v-for="photo in this.profilePhotos" :key="photo.PhotoID" class="horizontal-photo-div">
 
-                        <Photo @delete-post="deletePost(photo.PhotoID)"
+                        <PhotoCard @delete-post="deletePost(photo.PhotoID)"
                             :photoAuthor="photo.Author"
                             :photoLocation="`/pictures/${photo.PhotoID}.jpg`"
                             :photoDescription="photo.Description"
@@ -184,6 +229,16 @@ export default {
                         </button>
                     </div>
                 </form>
+            </div>
+            <div v-else>
+                <div v-if="this.profileJson.Followers">
+                    <div v-if="followedByYou()">
+                        <button class="btn btn-sm btn-outline-primary" @click="unfollowUser()">Unfollow</button>
+                    </div>
+                    <div v-else>
+                        <button class="btn btn-sm btn-outline-primary" @click="followUser()">Follow</button>
+                    </div>
+                </div>
             </div>
         </div>
 	</div>
