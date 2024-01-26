@@ -1,7 +1,9 @@
 package database
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -9,7 +11,7 @@ func (db *appdbimpl) GetCommentByCommentId(id string) (bool, Comment, error) {
 
 	var comment Comment
 	err := db.c.QueryRow("SELECT * FROM comments WHERE commentid = ?", id).Scan(&comment.CommentID, &comment.PhotoID, &comment.UserID, &comment.CommentText, &comment.DateAndTime)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
 		return false, comment, fmt.Errorf("error retreiving the comment")
 	}
 	return true, comment, nil

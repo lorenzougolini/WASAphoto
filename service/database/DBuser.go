@@ -64,17 +64,17 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 	profile := Profile{}
 
 	// get photos
-	rows, err := db.c.Query("SELECT photoid FROM photos WHERE userid = ? ORDER BY dateAndTime DESC;", userid)
+	photoRows, err := db.c.Query("SELECT photoid FROM photos WHERE userid = ? ORDER BY dateAndTime DESC;", userid)
 	if err != nil {
 		return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 	}
-	defer rows.Close()
+	defer photoRows.Close()
 
-	for rows.Next() {
+	for photoRows.Next() {
 
 		var photoid string
 
-		if err := rows.Scan(&photoid); err != nil {
+		if err := photoRows.Scan(&photoid); err != nil {
 			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 		}
 
@@ -84,57 +84,17 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 		}
 		profile.Posts = append(profile.Posts, photoData)
 
-		// photo := struct {
-		// 	PhotoID     string
-		// 	Description string
-		// 	DateAndTime string
-		// 	Likes       []string
-		// 	Comments    []struct {
-		// 		Username    string
-		// 		CommentText string
-		// 		DateAndTime string
-		// 	}
-		// }{}
-
-		// if err := rows.Scan(&photo.PhotoID, &photo.DateAndTime, &photo.Description); err != nil {
-		// 	return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
-		// }
-
-		// rows2, err := db.c.Query("SELECT userid FROM likes WHERE photoid = ?", photo.PhotoID)
-		// if err != nil {
-		// 	return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
-		// }
-		// defer rows2.Close()
-
-		// for rows2.Next() {
-		// 	var idWhoLikes string
-
-		// 	if err := rows2.Scan(&idWhoLikes); err != nil {
-		// 		return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
-		// 	}
-
-		// 	if userWhoLikes, err := db.GetById(idWhoLikes); err != nil {
-		// 		return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
-
-		// 	} else {
-		// 		photo.Likes = append(photo.Likes, userWhoLikes.Username)
-		// 	}
-
-		// 	profile.Posts.Photos = append(profile.Posts.Photos, photo)
-		// }
-		// profile.Posts.NumberOfPosts = len(profile.Posts.Photos)
-
 		// get followers
-		rows, err = db.c.Query("SELECT userid FROM follows WHERE followedid = ?", userid)
+		followersRows, err := db.c.Query("SELECT userid FROM follows WHERE followedid = ?", userid)
 		if err != nil {
 			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 		}
-		defer rows.Close()
+		defer followersRows.Close()
 
-		for rows.Next() {
+		for followersRows.Next() {
 			var followerid string
 
-			if err := rows.Scan(&followerid); err != nil {
+			if err := followersRows.Scan(&followerid); err != nil {
 				return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 			}
 
@@ -148,16 +108,16 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 		profile.Followers.NumberOfFollowers = len(profile.Followers.Usernames)
 
 		// get following
-		rows, err = db.c.Query("SELECT followedid FROM follows WHERE userid = ?", userid)
+		followingRows, err := db.c.Query("SELECT followedid FROM follows WHERE userid = ?", userid)
 		if err != nil {
 			return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 		}
-		defer rows.Close()
+		defer followingRows.Close()
 
-		for rows.Next() {
+		for followingRows.Next() {
 			var followedid string
 
-			if err := rows.Scan(&followedid); err != nil {
+			if err := followingRows.Scan(&followedid); err != nil {
 				return profile, fmt.Errorf("error retrieving the profile. err: %w", err)
 
 			}

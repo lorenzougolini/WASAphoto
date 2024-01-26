@@ -26,7 +26,6 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 	var newUserID string
 	user, err := rt.db.GetByUsername(username)
 	if err != nil {
-		print(err)
 		// user doesn't exists, so create a new one
 		generateID, err := uuid.NewV4()
 		if err != nil {

@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -49,7 +48,8 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	photoDir := "./webui/public/pictures/" + retrievedPhoto.PhotoID + ".jpg"
 	err = os.Remove(photoDir)
 	if err != nil {
-		fmt.Println("Error removing file:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(err)
 		return
 	}
 

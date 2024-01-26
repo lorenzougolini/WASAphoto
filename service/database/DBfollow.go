@@ -1,7 +1,9 @@
 package database
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -59,7 +61,7 @@ func (db *appdbimpl) UnfollowUser(loggedId string, unfollowedUsername string) er
 func (db *appdbimpl) IsFollowed(id string, followedId string) (bool, error) {
 	var count int
 	err := db.c.QueryRow("SELECT COUNT(*) FROM follows WHERE userid=? AND followedid=?", id, followedId).Scan(&count)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
 		return count > 0, err
 	}
 	return count > 0, nil

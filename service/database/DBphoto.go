@@ -1,7 +1,9 @@
 package database
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -9,7 +11,7 @@ func (db *appdbimpl) GetPhotoById(photoid string) (bool, Photo, error) {
 
 	var photo Photo
 	err := db.c.QueryRow("SELECT * FROM photos WHERE photoid = ?", photoid).Scan(&photo.PhotoID, &photo.UserID, &photo.PicPath, &photo.DateAndTime, &photo.Description)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
 		return false, photo, fmt.Errorf("error retreiving the photo")
 	}
 	return true, photo, nil
@@ -45,7 +47,7 @@ func (db *appdbimpl) GetPhotoData(photoid string) (PhotoData, error) {
 
 	var photodata PhotoData
 	err := db.c.QueryRow("SELECT userid, description, dateAndTime FROM photos WHERE photoid = ?", photoid).Scan(&photodata.Author, &photodata.Description, &photodata.DateAndTime)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
 		return photodata, fmt.Errorf("error retreiving the photo data")
 	}
 

@@ -39,6 +39,15 @@ type WebAPIConfiguration struct {
 func loadConfiguration() (WebAPIConfiguration, error) {
 	var cfg WebAPIConfiguration
 
+	// Init logging
+	logger := logrus.New()
+	logger.SetOutput(os.Stdout)
+	if cfg.Debug {
+		logger.SetLevel(logrus.DebugLevel)
+	} else {
+		logger.SetLevel(logrus.InfoLevel)
+	}
+
 	// Try to load configuration from environment variables and command line switches
 	if err := conf.Parse(os.Args[1:], "CFG", &cfg); err != nil {
 		if errors.Is(err, conf.ErrHelpWanted) {
@@ -46,7 +55,7 @@ func loadConfiguration() (WebAPIConfiguration, error) {
 			if err != nil {
 				return cfg, fmt.Errorf("generating config usage: %w", err)
 			}
-			logrus.Println(usage) //nolint:forbidigo
+			logger.Println(usage) //nolint:forbidigo
 			return cfg, conf.ErrHelpWanted
 		}
 		return cfg, fmt.Errorf("parsing config: %w", err)

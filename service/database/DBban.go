@@ -1,7 +1,9 @@
 package database
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -51,8 +53,8 @@ func (db *appdbimpl) UnbanUser(loggedId string, bannedId string) error {
 func (db *appdbimpl) IsBanned(id string, bannedId string) (bool, error) {
 	var count int
 	err := db.c.QueryRow("SELECT COUNT(*) FROM bans WHERE userid=? AND bannedid=?", id, bannedId).Scan(&count)
-	if err != nil {
-		return count > 0, err
+	if errors.Is(err, sql.ErrNoRows) {
+		return count > 0, nil
 	}
-	return count > 0, nil
+	return count > 0, err
 }
