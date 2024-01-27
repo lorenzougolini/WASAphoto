@@ -1,5 +1,4 @@
 <script>
-import ProfileView from './ProfileView.vue'
 import {user} from '../stores/user.js';
 
 export default {
@@ -16,8 +15,8 @@ export default {
 	methods: {
 		async login() {
 			this.loading = true;
-			this.errormsg = null;
-
+			this.errormsg = null; 
+			
 			try {
 				let response = await this.$axios.post("/session?username=" + this.username);
 				
@@ -25,9 +24,9 @@ export default {
 				user.value.username = response.data.Username;
 				user.value.authenticated = true;
 	
-				sessionStorage.setItem("userid", user.value.userid);
-				sessionStorage.setItem("username", user.value.username);
-				sessionStorage.setItem("authenticated", user.value.authenticated);
+				sessionStorage.setItem("userid", response.data.UserID),
+				sessionStorage.setItem("username", response.data.Username),
+				sessionStorage.setItem("authenticated", true),
 				
 				this.$router.replace("/users/" + user.value.username, { 
 					headers: {
@@ -35,6 +34,12 @@ export default {
 					}
 				});
 				
+				// this.$router.replace("/stream", { 
+				// 	headers: {
+				// 		'Authorization': user.value.userid,
+				// 	}
+				// });
+
 			} catch (e) {
 				this.errormsg = e.toString();
 			}

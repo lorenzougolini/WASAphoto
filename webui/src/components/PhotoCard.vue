@@ -25,22 +25,9 @@ export default {
             return normalDate.toLocaleString('it-EU');
         },
 
-        async loadProfile (photoAuthor) {
-			this.loading = true;
-			this.errormsg = null;
-            try {
-                this.$router.push("/users/" + photoAuthor, { 
-					headers: {
-						'Authorization': sessionStorage.getItem("userid"),
-					}
-				});
-
-            } catch (e) {
-                this.errormsg = e.toString();
-            }
-            this.loading = false;
-
-		},
+        buildLink() {
+            return "/users/" + this.photoAuthor;
+        },
     },
 
     computed: {
@@ -62,9 +49,12 @@ export default {
 <template>
     <div class="photo-card">
         <div class="author-container">
-            <div @click="loadProfile(photoAuthor)">
-                <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
-                {{ photoAuthor }}
+            <div>
+                <RouterLink :to="buildLink()" class="nav-link">
+                    <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
+                    {{ photoAuthor }}
+                </RouterLink>
+                <p class="photo-date-rigth">{{ formatDateFromUnix(photoDate) }}</p>
             </div>
         </div>
         <div class="image-container">
@@ -73,11 +63,9 @@ export default {
         <div class="descdate-delete-div">
             <br>
             <p>{{ photoDescription }}</p>
-            <p>{{ formatDateFromUnix(photoDate) }}</p>
             <p>Likes: {{ photoLikesNum }}</p>
             <p>Comments: {{ photoCommentsNum }}</p>
             <div class="photo-delete">
-                <!-- <button class="btn btn-sm btn-outline-danger" @click="this.$parent.deletePost(photoId)">Delete</button> -->
                 <button class="btn btn-sm btn-outline-danger" @search="$emit('delete-post')">Delete</button>
             </div>
         </div>
@@ -108,6 +96,18 @@ export default {
     padding: 5px;
     font-size:16px
 }
+.author-container div .nav-link {
+    margin-right: 250px;
+}
+
+.photo-date-rigth {
+    font-size: 14px;
+    font-family: sans-serif;
+    margin: 0;
+}
+/* .author-container div:hover {
+    background-color: #e6e6e6;
+}    */
 .image-container {
     height: 500px;
     overflow: hidden;

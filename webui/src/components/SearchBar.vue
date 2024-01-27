@@ -7,7 +7,7 @@ export default {
         RouterLink,
     },
 
-    emits: ['delete-post'],
+    emits: ['search-user'],
 
     data: function() {
         return {
@@ -37,20 +37,37 @@ export default {
 </script>
 
 <template>
-    <div class="search-bar">
-        <input v-model="searchUser" @keyup.enter="handleSearch" placeholder="Search..." class="center-placeholder">
+    <div class="search-container">
+        <div class="search-bar">
+            <input v-model="searchUser" @keyup.enter="handleSearch" placeholder="Search..." class="center-placeholder">
+            <button @click="handleSearch" class="btn">
+                <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#search"/></svg>
+            </button>
+        </div>
     </div>
 </template>
 
 
 <style scoped>
+
+.search-container {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
 .search-bar input {
   padding: 8px;
   width: 500px;
-  border: 1px solid #ccc;
+  border: none;
+  outline: none;
   border-radius: 10px;
 }
 .center-placeholder::placeholder {
-  text-align: center;
+  text-align: left;
+}
+.search-bar button {
+  padding: 8px;
+  border: none;
+  border-radius: 0 4px 4px 0;
 }
 </style>

@@ -1,11 +1,13 @@
 <script>
 import PhotoCard from '../components/PhotoCard.vue';
 import LoadingSpinner from '../components/LoadingSpinner.vue';
+import SearchBar from '../components/SearchBar.vue';
 import {user} from '../stores/user.js';
 
 export default {
     components: {
         PhotoCard,
+        SearchBar,
     },
     
 	data: function() {
@@ -21,7 +23,7 @@ export default {
 	},
 
 	methods: {
-		async loadProfile (shownUsername) {
+		async loadProfile(shownUsername) {
 			this.loading = true;
 			this.errormsg = null;
 
@@ -183,6 +185,9 @@ export default {
 		<div
 			class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
 			<h1 class="h2">Profile page</h1>
+            <div class="d-flex align-items-center">
+				<SearchBar @search-user="loadProfile(this.shownUsername)"/>
+			</div>
 			<div class="btn-toolbar mb-2 mb-md-0">
 				<div class="btn-group me-2">
 					<button type="button" class="btn btn-sm btn-outline-secondary" @click="loadProfile(shownUsername)">
@@ -220,8 +225,8 @@ export default {
             <div v-if="shownUsername == this.username" class="new-post-container">
                 <h3>New Post</h3>
                 <form @submit.prevent="newPost">
-                    Description: <input type="text" v-model="description" /><br />
                     Picture: <input type="file" v-on:change="fileUpload" /><br />
+                    Description: <input type="text" v-model="description" /><br />
                     <br>
                     <div class="btn-group me-2">
                         <button type="button" class="btn btn-sm btn-outline-primary" @click="newPost(description, picture)">

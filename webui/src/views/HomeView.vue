@@ -39,7 +39,11 @@ export default {
 		},
 	},
 	mounted() {
-		this.loadStream()
+		if (sessionStorage.getItem("authenticated")) {
+			this.loadStream();
+		} else {
+			this.$router.replace("/session");
+		}
 	}
 }
 </script>
@@ -57,11 +61,6 @@ export default {
 						Refresh
 					</button>
 				</div>
-				<!-- <div class="btn-group me-2">
-					<button type="button" class="btn btn-sm btn-outline-primary" @click="newItem">
-						New
-					</button>
-				</div> -->
 			</div>
 		</div>
 

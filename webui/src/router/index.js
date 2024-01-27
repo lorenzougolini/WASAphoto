@@ -7,8 +7,9 @@ const router = createRouter({
 	history: createWebHashHistory(import.meta.env.BASE_URL),
 	routes: [
 		{path: '/', component: HomeView},
+		{path: '/stream', component: HomeView},
 		{path: '/session', component: SessionLoginView},
-		{path: '/users/:username', component: ProfileView},
+		{path: '/users/:username', component: ProfileView}
 	]
 })
 
