@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"WASAphoto.uniroma1.it/WASAphoto/service/api/reqcontext"
 	"github.com/gofrs/uuid"
 	"github.com/julienschmidt/httprouter"
 )
 
-func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("content-type", "application/json")
 
 	username := r.URL.Query().Get("username")
@@ -22,43 +23,38 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
-	// check if username already exists, if yes log him in
+	// check if username already exists, if yes log in
 	var newUserID string
-	user, err := rt.db.GetByUsername(username)
+
+	dbuser, err := rt.db.GetByUsername(username)
 	if err != nil {
-		// user doesn't exists, so create a new one
+
+		// user doesn't exists, create a new one
 		generateID, err := uuid.NewV4()
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		if exists, err := rt.db.CheckID(generateID.String()); err != nil || exists > 0 {
+
+		newUserID = generateID.String()
+		if exists, err := rt.db.CheckIDExistence(newUserID); err != nil || exists {
 			w.WriteHeader(http.StatusBadRequest)
 			return
-		} else {
-			newUserID = generateID.String()
 		}
+
 		newUser := User{
 			UserID:   newUserID,
 			Username: username,
 		}
-		// UsernameToId[username] = newUserID
 
-		Logged.UserID = newUser.UserID
-		Logged.Username = newUser.Username
-		// rt.usr.Username = newUser.Username
-
-		// Users[newUser.UserID] = newUser
-		err = rt.db.SetUser(newUserID, newUser.Username)
+		dbuser, err = rt.db.SetUser(newUser.userToDBUser())
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_ = json.NewEncoder(w).Encode(err)
 			return
 		}
-	} else {
-		Logged.UserID = user.UserID
-		Logged.Username = user.Username
+
 	}
 
-	_ = json.NewEncoder(w).Encode(Logged)
+	_ = json.NewEncoder(w).Encode(dbuser)
 }

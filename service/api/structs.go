@@ -1,12 +1,26 @@
 package api
 
 import (
-	"net/http"
+	"WASAphoto.uniroma1.it/WASAphoto/service/database"
 )
 
 type User struct {
 	UserID   string
 	Username string
+}
+
+func (user *User) userToDBUser() database.User {
+	return database.User{
+		UserID:   user.UserID,
+		Username: user.Username,
+	}
+}
+
+func userFromDBUser(user database.User) User {
+	return User{
+		UserID:   user.UserID,
+		Username: user.Username,
+	}
 }
 
 type Profile struct {
@@ -72,13 +86,5 @@ type Stream struct {
 	}
 }
 
-var Logged = User{}
-var uncorrectLogin string = "User is not correctly authenticated"
-
-func checkLogin(r *http.Request) bool {
-	authToken := r.Header.Get("Authorization")
-	if authToken == "" || authToken != Logged.UserID {
-		return false
-	}
-	return true
-}
+// var Logged = User{}
+var errUncorrectLogin string = "User is not correctly authenticated"

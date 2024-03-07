@@ -4,17 +4,19 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"WASAphoto.uniroma1.it/WASAphoto/service/api/reqcontext"
 	"github.com/julienschmidt/httprouter"
 )
 
-func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("content-type", "application/json")
 
 	var message string
 	// check Bearer token
-	if !checkLogin(r) {
+	token := r.Header.Get("Authorization")
+	if exists, err := rt.db.CheckIDExistence(token); err != nil || token == "" || !exists {
 		w.WriteHeader(http.StatusUnauthorized)
-		_ = json.NewEncoder(w).Encode(uncorrectLogin)
+		_ = json.NewEncoder(w).Encode(errUncorrectLogin)
 		return
 	}
 
@@ -27,27 +29,26 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		message = "Photo not found"
 		_ = json.NewEncoder(w).Encode(message)
 		return
-
-	} else if !existsLike {
+	}
+	if !existsLike {
 		w.WriteHeader(http.StatusNotFound)
 		message = "Like not found"
 		_ = json.NewEncoder(w).Encode(message)
 		return
-
-	} else if errP != nil || errL != nil {
+	}
+	if errP != nil || errL != nil {
 		message = "Error removing like"
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(message)
 		return
+	}
 
-	} else {
-		err := rt.db.RemoveLike(removedLike.LikeID, unlikedPhoto.PhotoID)
-		if err != nil {
-			message = "Error removing like"
-			w.WriteHeader(http.StatusBadRequest)
-			_ = json.NewEncoder(w).Encode(message)
-			return
-		}
+	err := rt.db.RemoveLike(removedLike.LikeID)
+	if err != nil {
+		message = "Error removing like"
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(message)
+		return
 	}
 
 	_ = json.NewEncoder(w).Encode(unlikedPhoto)

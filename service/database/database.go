@@ -39,9 +39,9 @@ import (
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
 	GetByUsername(username string) (User, error)
-	SetUser(userid string, username string) error
+	SetUser(User) (User, error)
 	SetName(userid string, username string) error
-	CheckID(userid string) (int, error)
+	CheckIDExistence(userid string) (bool, error)
 	GetProfile(userid string) (Profile, error)
 
 	FollowUser(user string, username string) error
@@ -53,16 +53,16 @@ type AppDatabase interface {
 
 	PostPhoto(photo string) error
 	GetPhotoById(photoid string) (bool, Photo, error)
-	RemovePhoto(photoid string, userid string) error
+	RemovePhoto(photoid string) error
 
 	AddLike(like string) error
 	GetLikeByLikeId(likeid string) (bool, Like, error)
 	GetLikeByUserId(userid string, photoid string) (bool, error)
-	RemoveLike(likeid string, photoid string) error
+	RemoveLike(likeid string) error
 
 	AddComment(comment string) error
 	GetCommentByCommentId(id string) (bool, Comment, error)
-	RemoveComment(commentid string, photoid string) error
+	RemoveComment(commentid string) error
 
 	GetStream(userid string) (Stream, error)
 

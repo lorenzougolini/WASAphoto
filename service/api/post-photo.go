@@ -9,26 +9,21 @@ import (
 	"strconv"
 	"time"
 
+	"WASAphoto.uniroma1.it/WASAphoto/service/api/reqcontext"
 	"github.com/gofrs/uuid"
 	"github.com/julienschmidt/httprouter"
 )
 
 // getHelloWorld is an example of HTTP endpoint that returns "Hello world!" as a plain text
-func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("content-type", "multipart/form-data")
 
 	var message string
-	username := ps.ByName("username")
 	// check Bearer token
-	if !checkLogin(r) || username != Logged.Username {
+	token := r.Header.Get("Authorization")
+	if exists, err := rt.db.CheckIDExistence(token); err != nil || token == "" || !exists {
 		w.WriteHeader(http.StatusUnauthorized)
-		_ = json.NewEncoder(w).Encode(uncorrectLogin)
-		return
-	}
-	if username != Logged.Username {
-		w.WriteHeader(http.StatusUnauthorized)
-		message = "User is not authorized to add photos on this profile"
-		_ = json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(errUncorrectLogin)
 		return
 	}
 
@@ -41,7 +36,6 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		newPhotoID = generateID.String()
 	}
 
-	// SECOND METHOD TO READ BODY
 	err = r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		message = ("Failed to read request body")
@@ -70,7 +64,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	// create new Photo object
 	newPhoto := Photo{
 		PhotoID:     newPhotoID,
-		UserID:      Logged.UserID,
+		UserID:      token,
 		PicPath:     picDir + newPhotoID + ".jpg",
 		DateAndTime: strconv.FormatInt(time.Now().Unix(), 10),
 		Description: description,

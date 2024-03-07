@@ -31,12 +31,12 @@ func (db *appdbimpl) PostPhoto(photo string) error {
 	return nil
 }
 
-func (db *appdbimpl) RemovePhoto(userid string, photoid string) error {
+func (db *appdbimpl) RemovePhoto(photoid string) error {
 
 	// no need to delete all likes and comments associated, the db has delete on cascade
 
-	stmt, _ := db.c.Prepare("DELETE FROM photos WHERE photoid=? AND userid=?")
-	_, err := stmt.Exec(photoid, userid)
+	stmt, _ := db.c.Prepare("DELETE FROM photos WHERE photoid=?")
+	_, err := stmt.Exec(photoid)
 	if err != nil {
 		return fmt.Errorf("error deleting the photo")
 	}

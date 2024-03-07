@@ -216,6 +216,7 @@ export default {
                             :photoDate="photo.DateAndTime"
                             :photoLikes="photo.Likes"
                             :photoComments="photo.Comments"
+                            :parent="profile"
                         />
 
                         </div>

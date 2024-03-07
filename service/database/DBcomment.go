@@ -17,18 +17,18 @@ func (db *appdbimpl) GetCommentByCommentId(id string) (bool, Comment, error) {
 	return true, comment, nil
 }
 
-func (db *appdbimpl) AddComment(comment string) error {
+func (db *appdbimpl) AddComment(commentObj string) error {
 
-	added_comment := Comment{}
-	_ = json.Unmarshal([]byte(comment), &added_comment)
+	add_comment := Comment{}
+	_ = json.Unmarshal([]byte(commentObj), &add_comment)
 
 	stmt, _ := db.c.Prepare("INSERT INTO comments VALUES (?, ?, ?, ?, ?)")
 	_, err := stmt.Exec(
-		added_comment.CommentID,
-		added_comment.PhotoID,
-		added_comment.UserID,
-		added_comment.CommentText,
-		added_comment.DateAndTime)
+		add_comment.CommentID,
+		add_comment.PhotoID,
+		add_comment.UserID,
+		add_comment.CommentText,
+		add_comment.DateAndTime)
 
 	if err != nil {
 		return fmt.Errorf("error liking the photo")
@@ -36,10 +36,10 @@ func (db *appdbimpl) AddComment(comment string) error {
 	return nil
 }
 
-func (db *appdbimpl) RemoveComment(commentid string, photoid string) error {
+func (db *appdbimpl) RemoveComment(commentid string) error {
 
-	stmt, _ := db.c.Prepare("DELETE FROM comments WHERE commentid=? AND photoid=?")
-	_, err := stmt.Exec(commentid, photoid)
+	stmt, _ := db.c.Prepare("DELETE FROM comments WHERE commentid=?")
+	_, err := stmt.Exec(commentid)
 	if err != nil {
 		return fmt.Errorf("error removing the comment from the photo")
 	}

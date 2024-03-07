@@ -6,18 +6,20 @@ import (
 	"strconv"
 	"time"
 
+	"WASAphoto.uniroma1.it/WASAphoto/service/api/reqcontext"
 	"github.com/gofrs/uuid"
 	"github.com/julienschmidt/httprouter"
 )
 
-func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("content-type", "application/json")
 
 	var message string
 	// check Bearer token
-	if !checkLogin(r) {
+	token := r.Header.Get("Authorization")
+	if exists, err := rt.db.CheckIDExistence(token); err != nil || token == "" || !exists {
 		w.WriteHeader(http.StatusUnauthorized)
-		_ = json.NewEncoder(w).Encode(uncorrectLogin)
+		_ = json.NewEncoder(w).Encode(errUncorrectLogin)
 		return
 	}
 
@@ -33,35 +35,35 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 
 	// create new Like object
 	existsPhoto, likingPhoto, errP := rt.db.GetPhotoById(ps.ByName("photoid"))
-	banned, errB := rt.db.IsBanned(likingPhoto.UserID, Logged.UserID)
+	banned, errB := rt.db.IsBanned(likingPhoto.UserID, token)
 	if errP != nil || errB != nil {
 		message = "Error liking the photo"
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(message)
 		return
-
-	} else if !existsPhoto {
+	}
+	if !existsPhoto {
 		message = "Photo not found"
 		w.WriteHeader(http.StatusNotFound)
 		_ = json.NewEncoder(w).Encode(message)
 		return
-
-	} else if banned {
+	}
+	if banned {
 		message = "User cannot like the photo"
 		w.WriteHeader(http.StatusUnauthorized)
 		_ = json.NewEncoder(w).Encode(message)
 		return
-
 	}
 
 	// check if the user has already liked the photo
-	existLike, errL := rt.db.GetLikeByUserId(Logged.UserID, likingPhoto.PhotoID)
+	existLike, errL := rt.db.GetLikeByUserId(token, likingPhoto.PhotoID)
 	if errL != nil {
 		message = "Error liking the photo"
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(message)
 		return
-	} else if existLike {
+	}
+	if existLike {
 		message = "User has already liked the photo"
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(message)
@@ -71,7 +73,7 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 	newLike := Like{
 		LikeID:      newLikeID,
 		PhotoID:     likingPhoto.PhotoID,
-		UserID:      Logged.UserID,
+		UserID:      token,
 		DateAndTime: strconv.FormatInt(time.Now().Unix(), 10),
 	}
 

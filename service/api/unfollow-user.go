@@ -5,18 +5,20 @@ import (
 	"fmt"
 	"net/http"
 
+	"WASAphoto.uniroma1.it/WASAphoto/service/api/reqcontext"
 	"github.com/julienschmidt/httprouter"
 )
 
-func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("content-type", "text/plain")
 
 	var message string
 	username := ps.ByName("username")
 	// check Bearer token
-	if !checkLogin(r) || username != Logged.Username {
+	token := r.Header.Get("Authorization")
+	if exists, err := rt.db.CheckIDExistence(token); err != nil || token == "" || !exists {
 		w.WriteHeader(http.StatusUnauthorized)
-		_ = json.NewEncoder(w).Encode(uncorrectLogin)
+		_ = json.NewEncoder(w).Encode(errUncorrectLogin)
 		return
 	}
 
@@ -32,19 +34,20 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 	unfollowedUser, err := rt.db.GetByUsername(unfollowedUsername)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		message = fmt.Sprintf("The username '%s' doesn't exist", unfollowedUsername)
+		message = fmt.Sprintf("The user '%s' doesn't exist", unfollowedUsername)
 		_ = json.NewEncoder(w).Encode(message)
 		return
-
-	} else {
-		err := rt.db.UnfollowUser(Logged.UserID, unfollowedUser.Username)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_ = json.NewEncoder(w).Encode(err)
-			return
-		}
-		message = Logged.Username + " succesfully unfollowed: " + unfollowedUsername
-		w.WriteHeader(http.StatusCreated)
-		_ = json.NewEncoder(w).Encode(message)
 	}
+
+	err = rt.db.UnfollowUser(token, unfollowedUser.UserID)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	message = unfollowedUsername + " succesfully unfollowed!"
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(message)
+
 }

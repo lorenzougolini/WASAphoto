@@ -5,18 +5,20 @@ import (
 	"fmt"
 	"net/http"
 
+	"WASAphoto.uniroma1.it/WASAphoto/service/api/reqcontext"
 	"github.com/julienschmidt/httprouter"
 )
 
-func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("content-type", "application/json")
 
 	var message string
 	username := ps.ByName("username")
 	// check Bearer token
-	if !checkLogin(r) || username != Logged.Username {
+	token := r.Header.Get("Authorization")
+	if exists, err := rt.db.CheckIDExistence(token); err != nil || token == "" || !exists {
 		w.WriteHeader(http.StatusUnauthorized)
-		_ = json.NewEncoder(w).Encode(uncorrectLogin)
+		_ = json.NewEncoder(w).Encode(errUncorrectLogin)
 		return
 	}
 
@@ -37,19 +39,16 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 		message = fmt.Sprintf("The username '%s' doesn't exist", followedUsername)
 		_ = json.NewEncoder(w).Encode(message)
 		return
-	} else {
-		logged, _ := json.Marshal(Logged)
-		followed, _ := json.Marshal(followedUser)
-		err := rt.db.FollowUser(string(logged), string(followed))
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_ = json.NewEncoder(w).Encode(err)
-			return
-		}
-		message = Logged.Username + " succesfully followed: " + followedUsername
-		w.WriteHeader(http.StatusCreated)
-		_ = json.NewEncoder(w).Encode(message)
 	}
 
-	_ = json.NewEncoder(w).Encode(followedUser)
+	err = rt.db.FollowUser(token, followedUser.UserID)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	message = followedUsername + " succesfully followed!"
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(message)
 }

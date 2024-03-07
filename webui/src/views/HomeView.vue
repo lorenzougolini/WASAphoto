@@ -76,12 +76,15 @@ export default {
 			<div v-for="photo in this.streamJson.Posts" :key="photo.PhotoID">
 				<PhotoCard 
 					:photoAuthor="photo.Author"
+					:photoId="photo.PhotoID"
 					:photoLocation="`/pictures/${photo.PhotoID}.jpg`" 
 					:photoDescription="photo.Description"
 					:photoDate="photo.DateAndTime"
 					:photoLikes="photo.Likes"
 					:photoComments="photo.Comments"
+					:parent="stream"
 					/>
+				<br>
 			</div>
 		</div>
 		

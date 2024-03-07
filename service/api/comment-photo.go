@@ -6,19 +6,21 @@ import (
 	"strconv"
 	"time"
 
+	"WASAphoto.uniroma1.it/WASAphoto/service/api/reqcontext"
 	"github.com/gofrs/uuid"
 	"github.com/julienschmidt/httprouter"
 )
 
 // getHelloWorld is an example of HTTP endpoint that returns "Hello world!" as a plain text
-func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("content-type", "multipart/form-data")
 
 	var message string
-	// check Bearear token
-	if !checkLogin(r) {
+	// check Bearer token
+	token := r.Header.Get("Authorization")
+	if exists, err := rt.db.CheckIDExistence(token); err != nil || token == "" || !exists {
 		w.WriteHeader(http.StatusUnauthorized)
-		_ = json.NewEncoder(w).Encode(uncorrectLogin)
+		_ = json.NewEncoder(w).Encode(errUncorrectLogin)
 		return
 	}
 
@@ -50,8 +52,7 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	existsPhoto, commentingPhoto, errP := rt.db.GetPhotoById(ps.ByName("photoid"))
-	banned, errB := rt.db.IsBanned(commentingPhoto.UserID, Logged.UserID)
-	if errP != nil || errB != nil {
+	if errP != nil {
 		message = "Error commenting the photo"
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(message)
@@ -62,8 +63,10 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 		w.WriteHeader(http.StatusNotFound)
 		_ = json.NewEncoder(w).Encode(message)
 		return
+	}
 
-	} else if banned {
+	banned, errB := rt.db.IsBanned(commentingPhoto.UserID, token)
+	if banned || errB != nil {
 		message = "User cannot like the photo"
 		w.WriteHeader(http.StatusUnauthorized)
 		_ = json.NewEncoder(w).Encode(message)
@@ -72,8 +75,8 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 
 	newComment := Comment{
 		CommentID:   newCommentID,
-		UserID:      Logged.UserID,
 		PhotoID:     commentingPhoto.PhotoID,
+		UserID:      token,
 		CommentText: commentText,
 		DateAndTime: strconv.FormatInt(time.Now().Unix(), 10),
 	}

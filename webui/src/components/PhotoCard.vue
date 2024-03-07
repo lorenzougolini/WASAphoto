@@ -16,7 +16,8 @@ export default {
         photoDescription: String,
         photoDate: String,
         photoLikes: Array,
-        photoComments: Array
+        photoComments: Array,
+        parent: String
     },
 
     methods: {
@@ -25,8 +26,26 @@ export default {
             return normalDate.toLocaleString('it-EU');
         },
 
-        buildLink() {
+        buildUserLink() {
             return "/users/" + this.photoAuthor;
+        },
+
+        async toggleLike() {
+            this.loading = true;   
+            this.errormsg = null;
+            
+            try {         
+                let response = await this.$axios.post("/photos/" + this.photoId + "/likes", {},{
+                    headers: {
+                        'Authorization': sessionStorage.getItem("userid"),
+                    }
+                });
+                console.log(response);
+            } catch (e) {
+                this.errormsg = e.toString();
+            }
+            this.loading = false;
+            console.log("Post liked!");
         },
     },
 
@@ -50,7 +69,7 @@ export default {
     <div class="photo-card">
         <div class="author-container">
             <div>
-                <RouterLink :to="buildLink()" class="nav-link">
+                <RouterLink :to="buildUserLink()" class="nav-link">
                     <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
                     {{ photoAuthor }}
                 </RouterLink>
@@ -60,14 +79,20 @@ export default {
         <div class="image-container">
             <img :src="photoLocation" :alt="photoDescription"><br>
         </div>
-        <div class="descdate-delete-div">
+        <div class="descdate-div">
             <br>
             <p>{{ photoDescription }}</p>
-            <p>Likes: {{ photoLikesNum }}</p>
-            <p>Comments: {{ photoCommentsNum }}</p>
-            <div class="photo-delete">
-                <button class="btn btn-sm btn-outline-danger" @search="$emit('delete-post')">Delete</button>
+        </div>
+        <div class="like-comment-div">
+            <div class="btn-group" role="group" aria-label="Basic example">
+                <button type="button" @click="toggleLike()"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#like"/></svg>Likes: {{ photoLikesNum }}</button>
+                <button type="button"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#comment"/></svg>Comments: {{ photoCommentsNum }}</button>
+                <!-- <p>Likes: {{ photoLikesNum }}</p>
+                <p>Comments: {{ photoCommentsNum }}</p> -->
             </div>
+        </div>
+        <div v-if="this.$route.params.username === photoAuthor" class="photo-delete">
+            <button class="btn btn-sm btn-outline-danger" @search="$emit('delete-post')">Delete</button>
         </div>
     </div>
 </template>

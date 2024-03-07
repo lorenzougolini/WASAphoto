@@ -5,22 +5,18 @@ import (
 	"fmt"
 )
 
-// SetName is an example that shows you how to execute insert/update
-func (db *appdbimpl) SetUser(id string, username string) error {
-	stmt, _ := db.c.Prepare("INSERT INTO users (userid, username) VALUES (?, ?);")
-	_, err := stmt.Exec(id, username)
+func (db *appdbimpl) SetUser(user User) (User, error) {
+	_, err := db.c.Exec("INSERT INTO users (userid, username) VALUES (?, ?);", user.UserID, user.Username)
 	if err != nil {
-		return fmt.Errorf("error in profie creation. err: %w", err)
+		return user, fmt.Errorf("error in profie creation. err: %w", err)
 	}
-	return nil
+	return user, nil
 }
 
-func (db *appdbimpl) SetName(id string, newUsername string) error {
-	stmt, err := db.c.Prepare("UPDATE users SET username = ? WHERE userid = ?;")
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(newUsername, id)
+func (db *appdbimpl) SetName(reqUserId string, newUsername string) error {
+
+	stmt, _ := db.c.Prepare("UPDATE users SET username = ? WHERE userid = ?;")
+	_, err := stmt.Exec(newUsername, reqUserId)
 	if err != nil {
 		return err
 	}
@@ -32,9 +28,9 @@ func (db *appdbimpl) GetByUsername(username string) (User, error) {
 	err := db.c.QueryRow("SELECT * FROM users WHERE username=?", username).Scan(&user.UserID, &user.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, fmt.Errorf("user ByUsername %s: no such user", username)
+			return user, fmt.Errorf("no such user")
 		}
-		return user, fmt.Errorf("user ByUsername %s: %w", username, err)
+		return user, fmt.Errorf("error retrieving the user: %w", err)
 	}
 	return user, nil
 }
@@ -44,20 +40,20 @@ func (db *appdbimpl) GetById(userid string) (User, error) {
 	err := db.c.QueryRow("SELECT * FROM users WHERE userid=?", userid).Scan(&user.UserID, &user.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, fmt.Errorf("user ByUsername %s: no such user", userid)
+			return user, fmt.Errorf("no such user")
 		}
-		return user, fmt.Errorf("user ByUsername %s: %w", userid, err)
+		return user, fmt.Errorf("error retrieving the user: %w", err)
 	}
 	return user, nil
 }
 
-func (db *appdbimpl) CheckID(id string) (int, error) {
-	var count int
-	err := db.c.QueryRow("SELECT COUNT(*) FROM users WHERE userid = ?", id).Scan(&count)
+func (db *appdbimpl) CheckIDExistence(userID string) (bool, error) {
+	var exists bool
+	err := db.c.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE userid = ?)", userID).Scan(&exists)
 	if err != nil {
-		return 0, fmt.Errorf("search id %s: %w", id, err)
+		return false, fmt.Errorf("user not found: %w", err)
 	}
-	return count, nil
+	return exists, nil
 }
 
 func (db *appdbimpl) GetProfile(userid string) (Profile, error) {

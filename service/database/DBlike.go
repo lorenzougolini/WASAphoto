@@ -44,10 +44,10 @@ func (db *appdbimpl) AddLike(like string) error {
 	return nil
 }
 
-func (db *appdbimpl) RemoveLike(likeid string, photoid string) error {
+func (db *appdbimpl) RemoveLike(likeid string) error {
 
-	stmt, _ := db.c.Prepare("DELETE FROM likes WHERE likeid=? AND photoid=?")
-	_, err := stmt.Exec(likeid, photoid)
+	stmt, _ := db.c.Prepare("DELETE FROM likes WHERE likeid=?")
+	_, err := stmt.Exec(likeid)
 	if err != nil {
 		return fmt.Errorf("error removing the like from the photo")
 	}
