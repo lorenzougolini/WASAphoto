@@ -1,50 +1,15 @@
 package api
 
-import (
-	"WASAphoto.uniroma1.it/WASAphoto/service/database"
-)
+import "strings"
 
 type User struct {
 	UserID   string
 	Username string
 }
 
-func (user *User) userToDBUser() database.User {
-	return database.User{
-		UserID:   user.UserID,
-		Username: user.Username,
-	}
-}
-
-func userFromDBUser(user database.User) User {
-	return User{
-		UserID:   user.UserID,
-		Username: user.Username,
-	}
-}
-
-type Profile struct {
-	Posts struct {
-		Photos []struct {
-			File        string
-			Description string
-			DateAndTime string
-		}
-		NumberOfPosts int
-	}
-	Followers struct {
-		Usernames         []string
-		NumberOfFollowers int
-	}
-	Following struct {
-		Usernames         []string
-		NumberOfFollowing int
-	}
-}
-
 type Photo struct {
 	PhotoID     string
-	UserID      string
+	AuthorID    string
 	PicPath     string
 	DateAndTime string
 	Description string
@@ -59,7 +24,7 @@ type Like struct {
 
 type Comment struct {
 	CommentID   string
-	UserID      string
+	User        string
 	PhotoID     string
 	CommentText string
 	DateAndTime string
@@ -88,3 +53,9 @@ type Stream struct {
 
 // var Logged = User{}
 var errUncorrectLogin string = "User is not correctly authenticated"
+
+func formatId(id string) string {
+	parts := strings.Split(id, "-")
+	lastPart := parts[len(parts)-1]
+	return lastPart[len(lastPart)-12:]
+}

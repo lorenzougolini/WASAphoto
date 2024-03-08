@@ -39,7 +39,7 @@ import (
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
 	GetByUsername(username string) (User, error)
-	SetUser(User) (User, error)
+	SetUser(userid string, username string) error
 	SetName(userid string, username string) error
 	CheckIDExistence(userid string) (bool, error)
 	GetProfile(userid string) (Profile, error)
@@ -105,7 +105,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 	if errors.Is(err2, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE IF NOT EXISTS photos (
 			photoid TEXT NOT NULL PRIMARY KEY, 
-			userid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE, 
+			authorid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE, 
 			picPath TEXT NOT NULL, 
 			dateAndTime TEXT NOT NULL,
 			description TEXT

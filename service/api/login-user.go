@@ -26,35 +26,29 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 	// check if username already exists, if yes log in
 	var newUserID string
 
-	dbuser, err := rt.db.GetByUsername(username)
+	_, err := rt.db.GetByUsername(username)
+
 	if err != nil {
 
 		// user doesn't exists, create a new one
-		generateID, err := uuid.NewV4()
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		newUserID = generateID.String()
+		generateID, _ := uuid.NewV4()
+		newUserID = formatId(generateID.String())
 		if exists, err := rt.db.CheckIDExistence(newUserID); err != nil || exists {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		newUser := User{
-			UserID:   newUserID,
-			Username: username,
-		}
-
-		dbuser, err = rt.db.SetUser(newUser.userToDBUser())
+		err = rt.db.SetUser(newUserID, username)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_ = json.NewEncoder(w).Encode(err)
 			return
 		}
+		message = fmt.Sprintf("User '%s' created", username)
 
+	} else {
+		message = fmt.Sprintf("User '%s' logged in", username)
 	}
 
-	_ = json.NewEncoder(w).Encode(dbuser)
+	_ = json.NewEncoder(w).Encode(message)
 }

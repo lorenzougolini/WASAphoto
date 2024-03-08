@@ -7,7 +7,7 @@ type User struct {
 
 type Photo struct {
 	PhotoID     string
-	UserID      string
+	AuthorID    string
 	PicPath     string
 	DateAndTime string
 	Description string
@@ -22,8 +22,14 @@ type Like struct {
 
 type Comment struct {
 	CommentID   string
-	UserID      string
+	User        string
 	PhotoID     string
+	CommentText string
+	DateAndTime string
+}
+
+type PhotoComment struct {
+	Username    string
 	CommentText string
 	DateAndTime string
 }
@@ -34,11 +40,7 @@ type PhotoData struct {
 	Description string
 	DateAndTime string
 	Likes       []string
-	Comments    []struct {
-		Username    string
-		CommentText string
-		DateAndTime string
-	}
+	Comments    []PhotoComment
 }
 
 type Profile struct {
@@ -51,10 +53,15 @@ type Profile struct {
 		Usernames         []string
 		NumberOfFollowing int
 	}
+	Bans struct {
+		Usernames    []string
+		NumberOfBans int
+	}
 }
 
 type Stream struct {
 	Posts []PhotoData
 }
 
-var Logged = User{}
+var errRetrievingProfile = "error retrieving the profile: %w"
+var errRetrievingPhotoData = "error retrieving the photo data: %w"

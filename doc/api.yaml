@@ -1,6 +1,7 @@
 openapi: 3.0.0
 servers:
   - url: "http://localhost:3000"
+
 info:
   title: WASAPhoto
   description: |-
@@ -19,8 +20,8 @@ components:
     uuid:
       description: The general schema of the identifiers
       type: string
-      pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-      example: '3e0c6c36-9873-11ee-8a73-0800275d0f23'
+      pattern: '^[0-9a-f]{12}$'
+      example: '0800275d0f23'
       minLength: 36
       maxLength: 36
 
@@ -76,12 +77,12 @@ components:
           
     Photo:
       title: Photo
-      description: This object represents an image
+      description: This object represents an uploaded image
       type: object
       properties:
         photoID:
           $ref: '#/components/schemas/uuid'
-        userId:
+        authorId:
           $ref: '#/components/schemas/uuid'
         picture:
           description: The picture file

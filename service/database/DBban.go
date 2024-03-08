@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 )
 
@@ -45,11 +44,16 @@ func (db *appdbimpl) UnbanUser(reqUserId string, banUserId string) error {
 }
 
 // check banned user
-func (db *appdbimpl) IsBanned(reqUserId string, banUserId string) (bool, error) {
+func (db *appdbimpl) IsBanned(reqUserID, banUserID string) (bool, error) {
 	var count int
-	err := db.c.QueryRow("SELECT COUNT(*) FROM bans WHERE userid=? AND bannedid=?", reqUserId, banUserId).Scan(&count)
-	if errors.Is(err, sql.ErrNoRows) {
-		return count == 0, nil
+	err := db.c.QueryRow("SELECT COUNT(*) FROM bans WHERE userid=? AND bannedid=?", reqUserID, banUserID).Scan(&count)
+	if err == sql.ErrNoRows {
+		// No ban found
+		return false, nil
 	}
-	return count > 0, err
+	if err != nil {
+		return false, fmt.Errorf("error checking ban existence: %w", err)
+	}
+
+	return count > 0, nil
 }

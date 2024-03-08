@@ -15,9 +15,10 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 	var message string
 	// check Bearer token
-	if !checkLogin(r) {
+	token := r.Header.Get("Authorization")
+	if exists, err := rt.db.CheckIDExistence(token); err != nil || token == "" || !exists {
 		w.WriteHeader(http.StatusUnauthorized)
-		_ = json.NewEncoder(w).Encode(uncorrectLogin)
+		_ = json.NewEncoder(w).Encode(errUncorrectLogin)
 		return
 	}
 
@@ -31,13 +32,19 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 	user, err := rt.db.GetByUsername(username)
 	if err != nil {
-		message = "Provided username does not exists"
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	if banned, err := rt.db.IsBanned(token, user.UserID); banned || err != nil {
+
+		message = "The user is banned"
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(message)
-		return
 
 	} else {
-		// add call to getProfile
+
 		profile, err := rt.db.GetProfile(user.UserID)
 		if err != nil {
 			message = "Error retrieving the profile"
@@ -53,7 +60,6 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 			_ = json.NewEncoder(w).Encode(message)
 			return
 		}
-
 		// message = user.Username
 		// _ = json.NewEncoder(w).Encode(message)
 		_, _ = w.Write(profileJson)

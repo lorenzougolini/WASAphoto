@@ -7,16 +7,6 @@ import (
 	"fmt"
 )
 
-func (db *appdbimpl) GetCommentByCommentId(id string) (bool, Comment, error) {
-
-	var comment Comment
-	err := db.c.QueryRow("SELECT * FROM comments WHERE commentid = ?", id).Scan(&comment.CommentID, &comment.PhotoID, &comment.UserID, &comment.CommentText, &comment.DateAndTime)
-	if errors.Is(err, sql.ErrNoRows) {
-		return false, comment, fmt.Errorf("error retreiving the comment")
-	}
-	return true, comment, nil
-}
-
 func (db *appdbimpl) AddComment(commentObj string) error {
 
 	add_comment := Comment{}
@@ -26,7 +16,7 @@ func (db *appdbimpl) AddComment(commentObj string) error {
 	_, err := stmt.Exec(
 		add_comment.CommentID,
 		add_comment.PhotoID,
-		add_comment.UserID,
+		add_comment.User,
 		add_comment.CommentText,
 		add_comment.DateAndTime)
 
@@ -34,6 +24,36 @@ func (db *appdbimpl) AddComment(commentObj string) error {
 		return fmt.Errorf("error liking the photo")
 	}
 	return nil
+}
+
+func (db *appdbimpl) GetCommentByCommentId(id string) (bool, Comment, error) {
+
+	var comment Comment
+	err := db.c.QueryRow("SELECT * FROM comments WHERE commentid = ?", id).Scan(&comment.CommentID, &comment.PhotoID, &comment.User, &comment.CommentText, &comment.DateAndTime)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, comment, fmt.Errorf("error retreiving the comment")
+	}
+	return true, comment, nil
+}
+
+func (db *appdbimpl) GetCommentsByPhotoId(photoid string) ([]PhotoComment, error) {
+
+	rows, err := db.c.Query("SELECT u.username, c.commentText, c.dateAndTime FROM comments c JOIN users u ON c.userid = u.userid WHERE c.photoid = ?", photoid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var comments []PhotoComment
+	for rows.Next() {
+		var comment PhotoComment
+		if err := rows.Scan(&comment.Username, &comment.CommentText, &comment.DateAndTime); err != nil {
+			return nil, err
+		}
+		comments = append(comments, comment)
+	}
+
+	return comments, nil
 }
 
 func (db *appdbimpl) RemoveComment(commentid string) error {

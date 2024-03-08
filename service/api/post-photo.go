@@ -33,7 +33,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	} else {
-		newPhotoID = generateID.String()
+		newPhotoID = formatId(generateID.String())
 	}
 
 	err = r.ParseMultipartForm(10 << 20)
@@ -64,7 +64,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	// create new Photo object
 	newPhoto := Photo{
 		PhotoID:     newPhotoID,
-		UserID:      token,
+		AuthorID:    token,
 		PicPath:     picDir + newPhotoID + ".jpg",
 		DateAndTime: strconv.FormatInt(time.Now().Unix(), 10),
 		Description: description,

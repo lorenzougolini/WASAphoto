@@ -46,6 +46,45 @@ func (db *appdbimpl) UnfollowUser(reqUserId string, unfollowUserId string) error
 	return err
 }
 
+func (db *appdbimpl) GetFollowers(userid string) ([]string, error) {
+
+	rows, err := db.c.Query("SELECT u.username FROM users u JOIN follows f ON u.userid = f.userid WHERE f.followedid = ?", userid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var followers []string
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, err
+		}
+		followers = append(followers, username)
+	}
+
+	return followers, nil
+}
+
+func (db *appdbimpl) GetFollowing(userid string) ([]string, error) {
+	rows, err := db.c.Query("SELECT u.username FROM users u JOIN follows f ON u.userid = f.followedid WHERE f.userid = ?", userid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var following []string
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, err
+		}
+		following = append(following, username)
+	}
+
+	return following, nil
+}
+
 func (db *appdbimpl) IsFollowed(reqUserId string, followedId string) (bool, error) {
 	var count int
 	err := db.c.QueryRow("SELECT COUNT(*) FROM follows WHERE userid=? AND followedid=?", reqUserId, followedId).Scan(&count)

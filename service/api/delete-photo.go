@@ -32,7 +32,7 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	if retrievedPhoto.UserID != token {
+	if retrievedPhoto.AuthorID != token {
 		w.WriteHeader(http.StatusUnauthorized)
 		message = "User in not authorized to remove photos from this profile"
 		_ = json.NewEncoder(w).Encode(message)
