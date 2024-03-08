@@ -82,7 +82,7 @@ components:
       properties:
         photoID:
           $ref: '#/components/schemas/uuid'
-        authorId:
+        authorID:
           $ref: '#/components/schemas/uuid'
         picture:
           description: The picture file
