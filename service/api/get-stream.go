@@ -14,13 +14,14 @@ func (rt *_router) getStream(w http.ResponseWriter, r *http.Request, ps httprout
 
 	var message string
 	// check Bearer token
-	if !checkLogin(r) {
+	token := r.Header.Get("Authorization")
+	if exists, err := rt.db.CheckIDExistence(token); err != nil || token == "" || !exists {
 		w.WriteHeader(http.StatusUnauthorized)
-		_ = json.NewEncoder(w).Encode(uncorrectLogin)
+		_ = json.NewEncoder(w).Encode(errUncorrectLogin)
 		return
 	}
 
-	stream, err := rt.db.GetStream(Logged.UserID)
+	stream, err := rt.db.GetStream(token)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		message = "Error getting your stream"
