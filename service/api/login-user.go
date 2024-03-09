@@ -26,7 +26,7 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 	// check if username already exists, if yes log in
 	var newUserID string
 
-	_, err := rt.db.GetByUsername(username)
+	user, err := rt.db.GetByUsername(username)
 
 	if err != nil {
 
@@ -44,11 +44,13 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 			_ = json.NewEncoder(w).Encode(err)
 			return
 		}
-		message = fmt.Sprintf("User '%s' created", username)
+		message = fmt.Sprintf("User '%s', '%s' created", username, newUserID)
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(message)
 
 	} else {
-		message = fmt.Sprintf("User '%s' logged in", username)
+		ctx.Logger.Info("User logged in")
+		_ = json.NewEncoder(w).Encode(user)
 	}
 
-	_ = json.NewEncoder(w).Encode(message)
 }

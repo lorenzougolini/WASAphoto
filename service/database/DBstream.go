@@ -10,7 +10,7 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 	// get users followed
 	followedRows, err := db.c.Query("SELECT followedid FROM follows WHERE userid = ?", userid)
 	if err != nil {
-		return stream, fmt.Errorf("error retrieving the stream. err: %w", err)
+		return stream, fmt.Errorf(errRetrievingStream, err)
 	}
 	defer followedRows.Close()
 
@@ -18,14 +18,14 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 		var followedid string
 
 		if err := followedRows.Scan(&followedid); err != nil {
-			return stream, fmt.Errorf("error retrieving the stream. err: %w", err)
+			return stream, fmt.Errorf(errRetrievingStream, err)
 
 		}
 
 		// get photo data for each followed user
 		photoRows, err := db.c.Query("SELECT photoid FROM photos WHERE userid = ? ORDER BY dateAndTime DESC", followedid)
 		if err != nil {
-			return stream, fmt.Errorf("error retrieving the stream. err: %w", err)
+			return stream, fmt.Errorf(errRetrievingStream, err)
 		}
 		defer photoRows.Close()
 
@@ -33,12 +33,12 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 			var photoid string
 
 			if err := photoRows.Scan(&photoid); err != nil {
-				return stream, fmt.Errorf("error retrieving the stream. err: %w", err)
+				return stream, fmt.Errorf(errRetrievingStream, err)
 			}
 
 			photoData, err := db.GetPhotoData(photoid)
 			if err != nil {
-				return stream, fmt.Errorf("error retrieving the stream. err: %w", err)
+				return stream, fmt.Errorf(errRetrievingStream, err)
 			}
 			stream.Posts = append(stream.Posts, photoData)
 		}

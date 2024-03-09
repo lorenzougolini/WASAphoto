@@ -32,8 +32,9 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 	user, err := rt.db.GetByUsername(username)
 	if err != nil {
+		message = "No user"
 		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(err)
+		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
 
@@ -42,28 +43,25 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 		message = "The user is banned"
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(message)
+		return
 
-	} else {
-
-		profile, err := rt.db.GetProfile(user.UserID)
-		if err != nil {
-			message = "Error retrieving the profile"
-			w.WriteHeader(http.StatusBadRequest)
-			_ = json.NewEncoder(w).Encode(message)
-			return
-		}
-
-		profileJson, err := json.MarshalIndent(profile, "", " ")
-		if err != nil {
-			message = "Error retrieving the profile"
-			w.WriteHeader(http.StatusBadRequest)
-			_ = json.NewEncoder(w).Encode(message)
-			return
-		}
-		// message = user.Username
-		// _ = json.NewEncoder(w).Encode(message)
-		_, _ = w.Write(profileJson)
-		// logrus.Println(string(profileJson))
 	}
 
+	profile, err := rt.db.GetProfile(user.UserID)
+	if err != nil {
+		message = "Error retrieving the profile"
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	profileJson, err := json.MarshalIndent(profile, "", " ")
+	if err != nil {
+		message = "Error retrieving the profile"
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	_, _ = w.Write(profileJson)
 }

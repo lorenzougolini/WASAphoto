@@ -53,10 +53,6 @@ type Profile struct {
 		Usernames         []string
 		NumberOfFollowing int
 	}
-	Bans struct {
-		Usernames    []string
-		NumberOfBans int
-	}
 }
 
 type Stream struct {
@@ -65,3 +61,4 @@ type Stream struct {
 
 var errRetrievingProfile = "error retrieving the profile: %w"
 var errRetrievingPhotoData = "error retrieving the photo data: %w"
+var errRetrievingStream = "error retrieving the stream: %w"

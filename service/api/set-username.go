@@ -28,13 +28,7 @@ func (rt *_router) setUsername(w http.ResponseWriter, r *http.Request, ps httpro
 		message = fmt.Sprintf("The provided username '%s' is not valid", newUsername)
 		_ = json.NewEncoder(w).Encode(message)
 		return
-	} else if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		message = "Error changing the username"
-		_ = json.NewEncoder(w).Encode(message)
-		return
 	}
-
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		message = "Error changing the username"

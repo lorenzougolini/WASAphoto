@@ -28,7 +28,7 @@ func (db *appdbimpl) GetByUsername(username string) (User, error) {
 	err := db.c.QueryRow("SELECT * FROM users WHERE username=?", username).Scan(&user.UserID, &user.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, fmt.Errorf("no such user")
+			return user, err
 		}
 		return user, fmt.Errorf("error retrieving the user: %w", err)
 	}
@@ -61,7 +61,7 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 	profile := Profile{}
 
 	// get photos
-	photoRows, err := db.c.Query("SELECT photoid FROM photos WHERE userid = ? ORDER BY dateAndTime DESC;", userid)
+	photoRows, err := db.c.Query("SELECT photoid FROM photos WHERE authorid = ? ORDER BY dateAndTime DESC;", userid)
 	if err != nil {
 		return profile, fmt.Errorf(errRetrievingProfile, err)
 	}
