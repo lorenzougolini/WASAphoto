@@ -65,7 +65,7 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	banned, errB := rt.db.IsBanned(commentingPhoto.AuthorID, token)
+	banned, errB := rt.db.IsBannedBy(token, commentingPhoto.AuthorID)
 	if banned || errB != nil {
 		message = "User cannot like the photo"
 		w.WriteHeader(http.StatusUnauthorized)

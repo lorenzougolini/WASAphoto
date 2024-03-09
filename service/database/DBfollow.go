@@ -6,15 +6,15 @@ import (
 	"fmt"
 )
 
-func (db *appdbimpl) FollowUser(reqUserId string, followUserId string) error {
+func (db *appdbimpl) FollowUser(followerId string, followedId string) error {
 
 	// check followed user didn't ban the logged user
-	if banned, err := db.IsBanned(followUserId, reqUserId); banned || err != nil {
+	if banned, err := db.IsBannedBy(followerId, followedId); banned || err != nil {
 		return fmt.Errorf("impossible to follow the user; %w", err)
 	}
 
 	// check user isn't already followed
-	followed, err := db.IsFollowed(reqUserId, followUserId)
+	followed, err := db.IsFollowedBy(followedId, followerId)
 	if followed {
 		return fmt.Errorf("the user is already followed")
 	}
@@ -22,8 +22,8 @@ func (db *appdbimpl) FollowUser(reqUserId string, followUserId string) error {
 		return fmt.Errorf("error adding the follow: %w", err)
 	}
 
-	stmt, _ := db.c.Prepare("INSERT INTO follows (userid, followedid) VALUES (?, ?);")
-	_, err = stmt.Exec(reqUserId, followUserId)
+	stmt, _ := db.c.Prepare("INSERT INTO follows (followerid, followedid) VALUES (?, ?);")
+	_, err = stmt.Exec(followerId, followedId)
 	if err != nil {
 		return fmt.Errorf("error adding the follow: %w", err)
 	}
@@ -31,9 +31,9 @@ func (db *appdbimpl) FollowUser(reqUserId string, followUserId string) error {
 }
 
 // unfollow loggedUser
-func (db *appdbimpl) UnfollowUser(reqUserId string, unfollowUserId string) error {
+func (db *appdbimpl) UnfollowUser(followerId string, followedId string) error {
 
-	followed, err := db.IsFollowed(reqUserId, unfollowUserId)
+	followed, err := db.IsFollowedBy(followedId, followerId)
 	if !followed {
 		return fmt.Errorf("the user is not followed at the moment")
 	}
@@ -41,14 +41,14 @@ func (db *appdbimpl) UnfollowUser(reqUserId string, unfollowUserId string) error
 		return fmt.Errorf("error removing the follow: %w", err)
 	}
 
-	sqlStmt := "DELETE FROM follows WHERE userid=? AND followedid=?"
-	_, err = db.c.Exec(sqlStmt, reqUserId, unfollowUserId)
+	sqlStmt := "DELETE FROM follows WHERE followerid=? AND followedid=?"
+	_, err = db.c.Exec(sqlStmt, followerId, followedId)
 	return err
 }
 
 func (db *appdbimpl) GetFollowers(userid string) ([]string, error) {
 
-	rows, err := db.c.Query("SELECT u.username FROM users u JOIN follows f ON u.userid = f.userid WHERE f.followedid = ?", userid)
+	rows, err := db.c.Query("SELECT u.username FROM users u JOIN follows f ON u.userid = f.followerid WHERE f.followedid = ?", userid)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (db *appdbimpl) GetFollowers(userid string) ([]string, error) {
 }
 
 func (db *appdbimpl) GetFollowing(userid string) ([]string, error) {
-	rows, err := db.c.Query("SELECT u.username FROM users u JOIN follows f ON u.userid = f.followedid WHERE f.userid = ?", userid)
+	rows, err := db.c.Query("SELECT u.username FROM users u JOIN follows f ON u.userid = f.followedid WHERE f.followerid = ?", userid)
 	if err != nil {
 		return nil, err
 	}
@@ -85,9 +85,9 @@ func (db *appdbimpl) GetFollowing(userid string) ([]string, error) {
 	return following, nil
 }
 
-func (db *appdbimpl) IsFollowed(reqUserId string, followedId string) (bool, error) {
+func (db *appdbimpl) IsFollowedBy(followedId string, followerId string) (bool, error) {
 	var count int
-	err := db.c.QueryRow("SELECT COUNT(*) FROM follows WHERE userid=? AND followedid=?", reqUserId, followedId).Scan(&count)
+	err := db.c.QueryRow("SELECT COUNT(*) FROM follows WHERE followerid=? AND followedid=?", followerId, followedId).Scan(&count)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, nil
 	}

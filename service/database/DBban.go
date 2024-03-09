@@ -6,9 +6,9 @@ import (
 )
 
 // Ban user
-func (db *appdbimpl) BanUser(reqUserId string, banUserId string) error {
+func (db *appdbimpl) BanUser(bannerId string, bannedId string) error {
 
-	banned, err := db.IsBanned(reqUserId, banUserId)
+	banned, err := db.IsBannedBy(bannedId, bannerId)
 	if banned {
 		return fmt.Errorf("the user is already banned")
 	}
@@ -19,7 +19,7 @@ func (db *appdbimpl) BanUser(reqUserId string, banUserId string) error {
 	}
 
 	sqlStmt := "INSERT INTO bans VALUES (?, ?);"
-	_, err = db.c.Exec(sqlStmt, reqUserId, banUserId)
+	_, err = db.c.Exec(sqlStmt, bannerId, bannedId)
 	if err != nil {
 		return fmt.Errorf("error adding the ban: %w", err)
 	}
@@ -28,14 +28,14 @@ func (db *appdbimpl) BanUser(reqUserId string, banUserId string) error {
 }
 
 // Unban user
-func (db *appdbimpl) UnbanUser(reqUserId string, banUserId string) error {
+func (db *appdbimpl) UnbanUser(bannerId string, bannedId string) error {
 
-	if banned, err := db.IsBanned(reqUserId, banUserId); !banned || err != nil {
+	if banned, err := db.IsBannedBy(bannedId, bannerId); !banned || err != nil {
 		return fmt.Errorf("the user is not banned at the moment")
 
 	}
-	sqlStmt := "DELETE FROM bans WHERE userid=? AND bannedid=?"
-	_, err := db.c.Exec(sqlStmt, reqUserId, banUserId)
+	sqlStmt := "DELETE FROM bans WHERE bannerid=? AND bannedid=?"
+	_, err := db.c.Exec(sqlStmt, bannerId, bannedId)
 	if err != nil {
 		return fmt.Errorf("error removing the ban: %w", err)
 	}
@@ -44,9 +44,9 @@ func (db *appdbimpl) UnbanUser(reqUserId string, banUserId string) error {
 }
 
 // check banned user
-func (db *appdbimpl) IsBanned(reqUserID, banUserID string) (bool, error) {
+func (db *appdbimpl) IsBannedBy(bannedId string, bannerId string) (bool, error) {
 	var count int
-	err := db.c.QueryRow("SELECT COUNT(*) FROM bans WHERE userid=? AND bannedid=?", reqUserID, banUserID).Scan(&count)
+	err := db.c.QueryRow("SELECT COUNT(*) FROM bans WHERE bannerid=? AND bannedid=?", bannerId, bannedId).Scan(&count)
 	if err == sql.ErrNoRows {
 		// No ban found
 		return false, nil

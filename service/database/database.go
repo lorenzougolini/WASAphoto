@@ -38,18 +38,18 @@ import (
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
-	GetByUsername(username string) (User, error)
 	SetUser(userid string, username string) error
 	SetName(userid string, username string) error
 	CheckIDExistence(userid string) (bool, error)
+	GetByUsername(username string) (User, error)
 	GetProfile(userid string) (Profile, error)
 
-	FollowUser(user string, username string) error
-	UnfollowUser(userid string, username string) error
+	FollowUser(followerId string, followedId string) error
+	UnfollowUser(followerId string, followedId string) error
 
 	BanUser(passedUsername string, username string) error
 	UnbanUser(userid string, username string) error
-	IsBanned(userid string, bannedId string) (bool, error)
+	IsBannedBy(bannedId string, bannerId string) (bool, error)
 
 	PostPhoto(photo string) error
 	GetPhotoById(photoid string) (bool, Photo, error)
@@ -153,7 +153,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 	// follows table
 	if errors.Is(err5, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE IF NOT EXISTS follows (
-			userid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
+			followerid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
 			followedid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE
 			);`
 		// FOREIGN KEY (userid) REFERENCES users(userid)
@@ -166,7 +166,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 	// bans table
 	if errors.Is(err6, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE IF NOT EXISTS bans (
-			userid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
+			bannerid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
 			bannedid TEXT NOT NULL REFERENCES users(userid) ON DELETE CASCADE
 			);`
 		// FOREIGN KEY (userid) REFERENCES users(userid)

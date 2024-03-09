@@ -38,7 +38,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-	if banned, err := rt.db.IsBanned(token, user.UserID); banned || err != nil {
+	if banned, err := rt.db.IsBannedBy(token, user.UserID); banned || err != nil {
 
 		message = "The user is banned"
 		w.WriteHeader(http.StatusBadRequest)

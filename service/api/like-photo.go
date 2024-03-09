@@ -35,7 +35,7 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 
 	// create new Like object
 	existsPhoto, likingPhoto, errP := rt.db.GetPhotoById(ps.ByName("photoid"))
-	banned, errB := rt.db.IsBanned(likingPhoto.AuthorID, token)
+	banned, errB := rt.db.IsBannedBy(token, likingPhoto.AuthorID)
 	if errP != nil || errB != nil {
 		message = "Error liking the photo"
 		w.WriteHeader(http.StatusBadRequest)
