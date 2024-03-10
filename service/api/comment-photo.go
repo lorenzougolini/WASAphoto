@@ -88,6 +88,8 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 		_ = json.NewEncoder(w).Encode(err)
 		return
 	}
+
+	ctx.Logger.Info("Comment added to photo " + newComment.PhotoID + ": " + newComment.CommentText)
 	_ = json.NewEncoder(w).Encode(commentingPhoto)
 
 }

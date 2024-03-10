@@ -8,7 +8,7 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 	stream := Stream{}
 
 	// get users followed
-	followedRows, err := db.c.Query("SELECT followedid FROM follows WHERE userid = ?", userid)
+	followedRows, err := db.c.Query("SELECT followedid FROM follows WHERE followerid = ?", userid)
 	if err != nil {
 		return stream, fmt.Errorf(errRetrievingStream, err)
 	}
@@ -23,7 +23,7 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 		}
 
 		// get photo data for each followed user
-		photoRows, err := db.c.Query("SELECT photoid FROM photos WHERE userid = ? ORDER BY dateAndTime DESC", followedid)
+		photoRows, err := db.c.Query("SELECT photoid FROM photos WHERE authorid = ? ORDER BY dateAndTime DESC", followedid)
 		if err != nil {
 			return stream, fmt.Errorf(errRetrievingStream, err)
 		}

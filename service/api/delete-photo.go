@@ -46,7 +46,7 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	photoDir := "./webui/public/pictures/" + retrievedPhoto.PhotoID + ".jpg"
+	photoDir := "./service/imgDB/" + retrievedPhoto.PhotoID + ".jpg"
 	err = os.Remove(photoDir)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -54,5 +54,7 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	_ = json.NewEncoder(w).Encode(retrievedPhoto)
+	message = "Photo removed"
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(message)
 }

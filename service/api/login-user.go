@@ -44,11 +44,12 @@ func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprout
 			_ = json.NewEncoder(w).Encode(err)
 			return
 		}
-		message = fmt.Sprintf("User '%s', '%s' created", username, newUserID)
+		ctx.Logger.Info("User created")
 		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(User{UserID: newUserID, Username: username})
 
 	} else {
+
 		ctx.Logger.Info("User logged in")
 		_ = json.NewEncoder(w).Encode(user)
 	}

@@ -1,6 +1,6 @@
 import {createRouter, createWebHashHistory} from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import SessionLoginView from '../views/SessionLoginView.vue'
+import LoginView from '../views/LoginView.vue'
 import ProfileView from '../views/ProfileView.vue'
 
 const router = createRouter({
@@ -8,7 +8,7 @@ const router = createRouter({
 	routes: [
 		{path: '/', component: HomeView},
 		{path: '/stream', component: HomeView},
-		{path: '/session', component: SessionLoginView},
+		{path: '/session', component: LoginView},
 		{path: '/users/:username', component: ProfileView}
 	]
 })

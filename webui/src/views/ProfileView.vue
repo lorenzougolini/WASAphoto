@@ -27,7 +27,7 @@ export default {
 			this.loading = true;
 			this.errormsg = null;
 
-            if (sessionStorage.getItem("authenticated")) {
+            if (sessionStorage.getItem("logged")) {
                 
                 try {
 

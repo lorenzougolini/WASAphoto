@@ -23,7 +23,7 @@ func (rt *_router) getStream(w http.ResponseWriter, r *http.Request, ps httprout
 
 	stream, err := rt.db.GetStream(token)
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
+		w.WriteHeader(http.StatusBadRequest)
 		message = "Error getting your stream"
 		_ = json.NewEncoder(w).Encode(message)
 		return
@@ -35,6 +35,6 @@ func (rt *_router) getStream(w http.ResponseWriter, r *http.Request, ps httprout
 		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
-	// _ = json.NewEncoder(w).Encode(Logged.Username)
+
 	_, _ = w.Write(streamJson)
 }

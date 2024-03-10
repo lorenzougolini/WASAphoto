@@ -22,11 +22,11 @@ export default {
 				
 				user.value.userid = response.data.UserID;
 				user.value.username = response.data.Username;
-				user.value.authenticated = true;
+				user.value.logged = true;
 	
 				sessionStorage.setItem("userid", response.data.UserID),
 				sessionStorage.setItem("username", response.data.Username),
-				sessionStorage.setItem("authenticated", true),
+				sessionStorage.setItem("logged", true),
 				
 				this.$router.replace("/users/" + user.value.username, { 
 					headers: {

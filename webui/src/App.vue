@@ -7,7 +7,8 @@ export default {
 
 	data: function() {
 		return {
-			username: '',
+			username: sessionStorage.getItem("username"),
+			logged: sessionStorage.getItem("logged"),
 		}
 	},
 	
@@ -30,33 +31,35 @@ export default {
 
 	<div class="container-fluid">
 		<div class="row">
-			<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-				<div class="position-sticky pt-3 sidebar-sticky">
-					<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
-						<span>General</span>
-					</h6>
-					<ul class="nav flex-column">
-						<li class="nav-item">
-							<RouterLink to="/stream" class="nav-link">
-								<svg class="feather"><use href="/feather-sprite-v4.29.0.svg#home"/></svg>
-								Home
-							</RouterLink>
-						</li>
-						<li class="nav-item">
-							<RouterLink :to="buildProfileLink()" class="nav-link">
-								<svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
-								Profile
-							</RouterLink>
-						</li>
-						<li class="nav-item">
-							<RouterLink to="/session" class="nav-link">
-								<svg class="feather"><use href="/feather-sprite-v4.29.0.svg#key"/></svg>
-								Login
-							</RouterLink>
-						</li>
-					</ul>
-				</div>
-			</nav>
+			<div v-if="this.logged">
+				<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+					<div class="position-sticky pt-3 sidebar-sticky">
+						<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+							<span>General</span>
+						</h6>
+						<ul class="nav flex-column">
+							<li class="nav-item">
+								<RouterLink to="/stream" class="nav-link">
+									<svg class="feather"><use href="/feather-sprite-v4.29.0.svg#home"/></svg>
+									Home
+								</RouterLink>
+							</li>
+							<li class="nav-item">
+								<RouterLink :to="buildProfileLink()" class="nav-link">
+									<svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
+									Profile
+								</RouterLink>
+							</li>
+							<li class="nav-item">
+								<RouterLink to="/session" class="nav-link">
+									<svg class="feather"><use href="/feather-sprite-v4.29.0.svg#key"/></svg>
+									Login
+								</RouterLink>
+							</li>
+						</ul>
+					</div>
+				</nav>
+			</div>
 
 			<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
 				<RouterView />

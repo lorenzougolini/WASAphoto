@@ -1,12 +1,12 @@
 <script>
-import SessionLoginView from './SessionLoginView.vue';
+import LoginView from './LoginView.vue';
 import PhotoCard from '../components/PhotoCard.vue';
 import SearchBar from '../components/SearchBar.vue';
 import {user} from '../stores/user.js';
 
 export default {
 	components: {
-		SessionLoginView,
+		LoginView,
 		PhotoCard,
 		SearchBar,
 	},
@@ -39,7 +39,7 @@ export default {
 		},
 	},
 	mounted() {
-		if (sessionStorage.getItem("authenticated")) {
+		if (sessionStorage.getItem("logged")) {
 			this.loadStream();
 		} else {
 			this.$router.replace("/session");
@@ -67,7 +67,7 @@ export default {
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 
 		<div v-if="!this.username || !this.userid">
-			<SessionLoginView />
+			<LoginView />
 		</div>
 		<div>
 			<LoadingSpinner :loading="loading" />

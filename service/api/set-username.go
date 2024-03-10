@@ -44,6 +44,6 @@ func (rt *_router) setUsername(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	w.WriteHeader(http.StatusOK)
-	message = fmt.Sprintf("The username has been changed to '%s'", newUsername)
-	_ = json.NewEncoder(w).Encode(message)
+	ctx.Logger.Info("The username has been changed")
+	_ = json.NewEncoder(w).Encode(User{UserID: token, Username: string(newUsername)})
 }
