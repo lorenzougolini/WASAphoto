@@ -44,21 +44,23 @@ func (db *appdbimpl) GetLikeByUserId(userid string, photoid string) (bool, error
 	return count > 0, nil
 }
 
-func (db *appdbimpl) GetLikesNamesByPhotoId(photoid string) ([]string, error) {
+func (db *appdbimpl) GetLikesNamesByPhotoId(photoid string) ([]PhotoLike, error) {
 
-	rows, err := db.c.Query("SELECT u.username FROM likes l JOIN users u ON l.userid = u.userid WHERE l.photoid = ? ORDER BY l.dateAndTime DESC", photoid)
+	rows, err := db.c.Query("SELECT u.username, l.likeid FROM likes l JOIN users u ON l.userid = u.userid WHERE l.photoid = ? ORDER BY l.dateAndTime DESC", photoid)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var likes []string
+	var likes []PhotoLike
 	for rows.Next() {
 		var username string
-		if err := rows.Scan(&username); err != nil {
+		var likeid string
+
+		if err := rows.Scan(&username, &likeid); err != nil {
 			return nil, err
 		}
-		likes = append(likes, username)
+		likes = append(likes, PhotoLike{LikeID: likeid, Username: username})
 	}
 
 	return likes, nil

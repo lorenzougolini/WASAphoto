@@ -28,7 +28,13 @@ type Comment struct {
 	DateAndTime string
 }
 
+type PhotoLike struct {
+	LikeID   string
+	Username string
+}
+
 type PhotoComment struct {
+	CommentID   string
 	Username    string
 	CommentText string
 	DateAndTime string
@@ -39,7 +45,7 @@ type PhotoData struct {
 	Author      string
 	Description string
 	DateAndTime string
-	Likes       []string
+	Likes       []PhotoLike
 	Comments    []PhotoComment
 }
 

@@ -1,12 +1,10 @@
 <script>
-import LoginView from './LoginView.vue';
 import PhotoCard from '../components/PhotoCard.vue';
 import SearchBar from '../components/SearchBar.vue';
 import {user} from '../stores/user.js';
 
 export default {
 	components: {
-		LoginView,
 		PhotoCard,
 		SearchBar,
 	},
@@ -17,6 +15,7 @@ export default {
 			loading: false,
 			username: sessionStorage.getItem("username"),
             userid: sessionStorage.getItem("userid"),
+			logged: sessionStorage.getItem("logged"),
 			streamJson: {},
 		}
 	},
@@ -39,7 +38,7 @@ export default {
 		},
 	},
 	mounted() {
-		if (sessionStorage.getItem("logged")) {
+		if (this.logged) {
 			this.loadStream();
 		} else {
 			this.$router.replace("/session");
@@ -66,9 +65,6 @@ export default {
 
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 
-		<div v-if="!this.username || !this.userid">
-			<LoginView />
-		</div>
 		<div>
 			<LoadingSpinner :loading="loading" />
 		</div>
@@ -77,12 +73,10 @@ export default {
 				<PhotoCard 
 					:photoAuthor="photo.Author"
 					:photoId="photo.PhotoID"
-					:photoLocation="`/pictures/${photo.PhotoID}.jpg`" 
 					:photoDescription="photo.Description"
 					:photoDate="photo.DateAndTime"
 					:photoLikes="photo.Likes"
 					:photoComments="photo.Comments"
-					:parent="stream"
 					/>
 				<br>
 			</div>

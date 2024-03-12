@@ -12,12 +12,18 @@ export default {
     props:{
         photoAuthor: String,
         photoId: String,
-        photoLocation: String,
         photoDescription: String,
         photoDate: String,
         photoLikes: Array,
         photoComments: Array,
-        parent: String
+    },
+
+    data: function() {
+        return {
+            loading: false,
+            errormsg: null,
+            like: this.checkLiked(),
+        }
     },
 
     methods: {
@@ -30,38 +36,82 @@ export default {
             return "/users/" + this.photoAuthor;
         },
 
+        checkLiked() {
+            if (!this.photoLikes) {
+                return {"liked": false, "likeid": null};
+            }
+
+            for (let i = 0; i < this.photoLikes.length; i++) {
+                const like = this.photoLikes[i]; 
+                if (like.Username === sessionStorage.getItem("username")) {
+                    console.log("the likeid is: " + like.LikeID);
+                    return {"liked": true, "likeid": like.LikeID};
+                }
+            }
+            return {"liked": false, "likeid": null};
+        },
+
         async toggleLike() {
             this.loading = true;   
             this.errormsg = null;
-            
-            try {         
-                let response = await this.$axios.post("/photos/" + this.photoId + "/likes", {},{
-                    headers: {
-                        'Authorization': sessionStorage.getItem("userid"),
-                    }
-                });
-                console.log(response);
-            } catch (e) {
-                this.errormsg = e.toString();
+
+            if (!this.like.liked) {
+                try {         
+                    let response = await this.$axios.post("/photos/" + this.photoId + "/likes", {},{
+                        headers: {
+                            'Authorization': sessionStorage.getItem("userid"),
+                        }
+                    });
+
+                    console.log(response);
+                    console.log("Post liked!");
+
+                } catch (e) {
+                    this.errormsg = e.toString();
+
+                }
+                this.loading = false;
+
+            } else {
+
+                try {
+                    console.log(this.photoId, this.like.likeid);
+
+                    let response = await this.$axios.delete("/photos/" + this.photoId + "/likes/" + this.like.likeid , {
+                        headers: {
+                            'Authorization': sessionStorage.getItem("userid"),
+                        }
+                    });
+
+                    // remove the like from photoLikes
+                    this.photoLikes = this.photoLikes.filter(like => like.LikeID !== this.like.likeid);
+                    console.log(this.photoLikes);
+
+                    console.log(response);
+                    console.log("Post disliked!");
+
+                } catch (e) {
+                    this.errormsg = e.toString();
+                }
+                this.loading = false;
             }
-            this.loading = false;
-            console.log("Post liked!");
+            
         },
     },
 
     computed: {
-        photoLikesNum() {
+        likesCount() {
             if (!this.photoLikes) {
                 return 0;
             }
             return this.photoLikes.length;
         },
-        photoCommentsNum() {
+        commentCount() {
             if (!this.photoComments) {
                 return 0;
             }
             return this.photoComments.length;
-        }
+        },
     }
 }
 </script>
@@ -85,10 +135,8 @@ export default {
         </div>
         <div class="like-comment-div">
             <div class="btn-group" role="group" aria-label="Basic example">
-                <button type="button" @click="toggleLike()"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#like"/></svg>Likes: {{ photoLikesNum }}</button>
-                <button type="button"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#comment"/></svg>Comments: {{ photoCommentsNum }}</button>
-                <!-- <p>Likes: {{ photoLikesNum }}</p>
-                <p>Comments: {{ photoCommentsNum }}</p> -->
+                <button type="button" @click="toggleLike()"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#like"/></svg>Likes: {{ likesCount }}</button>
+                <button type="button"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#comment"/></svg>Comments: {{ commentCount }}</button>
             </div>
         </div>
         <div v-if="this.$route.params.username === photoAuthor" class="photo-delete">

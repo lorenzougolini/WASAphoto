@@ -60,7 +60,7 @@ export default {
             this.errormsg = null;
 
             try {         
-                await this.$axios.post("/users/" + this.username + "/photos/", bodyFormData, {
+                await this.$axios.post("/users/" + this.username + "/photos", bodyFormData, {
                     headers: {
                         'Authorization': this.userid,
                         "Content-Type": "multipart/form-data"

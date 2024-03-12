@@ -38,7 +38,7 @@ func (db *appdbimpl) GetCommentByCommentId(id string) (bool, Comment, error) {
 
 func (db *appdbimpl) GetCommentsByPhotoId(photoid string) ([]PhotoComment, error) {
 
-	rows, err := db.c.Query("SELECT u.username, c.commentText, c.dateAndTime FROM comments c JOIN users u ON c.userid = u.userid WHERE c.photoid = ?", photoid)
+	rows, err := db.c.Query("SELECT u.username, c.commentid, c.commentText, c.dateAndTime FROM comments c JOIN users u ON c.userid = u.userid WHERE c.photoid = ?", photoid)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (db *appdbimpl) GetCommentsByPhotoId(photoid string) ([]PhotoComment, error
 	var comments []PhotoComment
 	for rows.Next() {
 		var comment PhotoComment
-		if err := rows.Scan(&comment.Username, &comment.CommentText, &comment.DateAndTime); err != nil {
+		if err := rows.Scan(&comment.Username, &comment.CommentID, &comment.CommentText, &comment.DateAndTime); err != nil {
 			return nil, err
 		}
 		comments = append(comments, comment)
