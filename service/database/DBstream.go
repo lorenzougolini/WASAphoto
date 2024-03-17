@@ -42,6 +42,13 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 			}
 			stream.Posts = append(stream.Posts, photoData)
 		}
+		if photoRows.Err() != nil {
+			return stream, photoRows.Err()
+		}
+	}
+
+	if followedRows.Err() != nil {
+		return stream, followedRows.Err()
 	}
 	return stream, nil
 }

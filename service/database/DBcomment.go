@@ -53,6 +53,9 @@ func (db *appdbimpl) GetCommentsByPhotoId(photoid string) ([]PhotoComment, error
 		comments = append(comments, comment)
 	}
 
+	if rows.Err() != nil {
+		return comments, rows.Err()
+	}
 	return comments, nil
 }
 

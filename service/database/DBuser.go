@@ -96,5 +96,8 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 	}
 	profile.Following.NumberOfFollowing = len(profile.Following.Usernames)
 
+	if photoRows.Err() != nil {
+		return profile, photoRows.Err()
+	}
 	return profile, nil
 }

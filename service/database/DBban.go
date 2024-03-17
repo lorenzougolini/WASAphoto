@@ -52,7 +52,7 @@ func (db *appdbimpl) IsBannedBy(bannedId string, bannerId string) (bool, error) 
 		return false, nil
 	}
 	if err != nil {
-		return false, fmt.Errorf("error checking ban existence: %w", err)
+		return false, err
 	}
 
 	return count > 0, nil

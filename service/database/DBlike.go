@@ -63,6 +63,9 @@ func (db *appdbimpl) GetLikesNamesByPhotoId(photoid string) ([]PhotoLike, error)
 		likes = append(likes, PhotoLike{LikeID: likeid, Username: username})
 	}
 
+	if rows.Err() != nil {
+		return likes, rows.Err()
+	}
 	return likes, nil
 }
 

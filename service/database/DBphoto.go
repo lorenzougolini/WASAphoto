@@ -50,12 +50,12 @@ func (db *appdbimpl) GetPhotoData(photoid string) (PhotoData, error) {
 
 	err := db.c.QueryRow("SELECT authorid, description, dateAndTime FROM photos WHERE photoid = ?", photoid).Scan(&photodata.Author, &photodata.Description, &photodata.DateAndTime)
 	if errors.Is(err, sql.ErrNoRows) {
-		return photodata, fmt.Errorf(errRetrievingPhotoData)
+		return photodata, err
 	}
 
 	// get author
 	if author, err := db.GetById(photodata.Author); err != nil {
-		return photodata, fmt.Errorf(errRetrievingPhotoData)
+		return photodata, err
 	} else {
 		photodata.Author = author.Username
 	}
@@ -63,13 +63,13 @@ func (db *appdbimpl) GetPhotoData(photoid string) (PhotoData, error) {
 	// get likes
 	photodata.Likes, err = db.GetLikesNamesByPhotoId(photoid)
 	if err != nil {
-		return photodata, fmt.Errorf(errRetrievingPhotoData)
+		return photodata, err
 	}
 
 	// get comments
 	photodata.Comments, err = db.GetCommentsByPhotoId(photoid)
 	if err != nil {
-		return photodata, fmt.Errorf(errRetrievingPhotoData)
+		return photodata, err
 	}
 
 	return photodata, nil

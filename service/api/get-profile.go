@@ -49,7 +49,6 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 	profile, err := rt.db.GetProfile(user.UserID)
 	if err != nil {
-		message = "Error retrieving the profile"
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(err)
 		return
@@ -57,7 +56,6 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 	profileJson, err := json.MarshalIndent(profile, "", " ")
 	if err != nil {
-		message = "Error retrieving the profile"
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(err)
 		return

@@ -24,8 +24,7 @@ func (rt *_router) getStream(w http.ResponseWriter, r *http.Request, ps httprout
 	stream, err := rt.db.GetStream(token)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		message = "Error getting your stream"
-		_ = json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(err)
 		return
 	}
 	streamJson, err := json.MarshalIndent(stream, "", " ")
