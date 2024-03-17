@@ -31,13 +31,16 @@ export default {
                 
                 try {
 
-                    // console.log(this.username, this.userid);
                     let response = await this.$axios.get("/users/" + shownUsername, {
                         headers: {
                             'Authorization': this.userid,
                         }
                     });
                     this.profileJson = response.data;
+                    
+                    // for (let i = 0; i < this.profileJson.Posts; i++) {
+                    //     this.profileJson.Posts[i].File = 'data:image/*;base64,' + this.profileJson.Posts[i].File
+                    // }
 
                 } catch (e) {
                     this.errormsg = e.toString();
@@ -72,6 +75,10 @@ export default {
             this.loading = false;
             console.log("New post created!");
             this.loadProfile(this.username);
+            
+            // Clear form fields
+            this.description = '';
+            this.$refs.fileUpload.value = null;
         },
 
         async deletePost(photoID) {
@@ -201,7 +208,7 @@ export default {
         <div class="profile-container">
             <LoadingSpinner :loading="loading" />
             <div v-if="!loading" class="photo-container">
-                <h2 class="h2">This is the profile of {{ shownUsername }}</h2>
+                <h2 class="h2">{{ shownUsername }}</h2>
                 <p>Posts: {{ numberOfPosts }}, 
                     Followers: {{ numberOfFollowers }}, 
                     Following: {{ numberOfFollowing }}
@@ -210,13 +217,7 @@ export default {
                     <div v-for="photo in this.profilePhotos" :key="photo.PhotoID" class="horizontal-photo-div">
 
                         <PhotoCard @delete-post="deletePost(photo.PhotoID)"
-                            :photoAuthor="photo.Author"
-                            :photoLocation="`/pictures/${photo.PhotoID}.jpg`"
-                            :photoDescription="photo.Description"
-                            :photoDate="photo.DateAndTime"
-                            :photoLikes="photo.Likes"
-                            :photoComments="photo.Comments"
-                            :parent="profile"
+                            :photo="photo"
                         />
 
                         </div>

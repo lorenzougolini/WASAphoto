@@ -1,7 +1,6 @@
 <script>
 import PhotoCard from '../components/PhotoCard.vue';
 import SearchBar from '../components/SearchBar.vue';
-import {user} from '../stores/user.js';
 
 export default {
 	components: {
@@ -71,12 +70,7 @@ export default {
 		<div class="stream-container">
 			<div v-for="photo in this.streamJson.Posts" :key="photo.PhotoID">
 				<PhotoCard 
-					:photoAuthor="photo.Author"
-					:photoId="photo.PhotoID"
-					:photoDescription="photo.Description"
-					:photoDate="photo.DateAndTime"
-					:photoLikes="photo.Likes"
-					:photoComments="photo.Comments"
+					:photo="photo"
 					/>
 				<br>
 			</div>

@@ -42,6 +42,7 @@ type PhotoComment struct {
 
 type PhotoData struct {
 	PhotoID     string
+	File        []byte
 	Author      string
 	Description string
 	DateAndTime string

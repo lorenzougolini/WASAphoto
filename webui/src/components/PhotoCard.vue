@@ -10,12 +10,10 @@ export default {
     emits: ['delete-post'],
 
     props:{
-        photoAuthor: String,
-        photoId: String,
-        photoDescription: String,
-        photoDate: String,
-        photoLikes: Array,
-        photoComments: Array,
+        photo: {
+            type: Object,
+            required: true
+        },
     },
 
     data: function() {
@@ -57,7 +55,7 @@ export default {
 
             if (!this.like.liked) {
                 try {         
-                    let response = await this.$axios.post("/photos/" + this.photoId + "/likes", {},{
+                    let response = await this.$axios.post("/photos/" + this.photo.PhotoID + "/likes", {},{
                         headers: {
                             'Authorization': sessionStorage.getItem("userid"),
                         }
@@ -75,17 +73,16 @@ export default {
             } else {
 
                 try {
-                    console.log(this.photoId, this.like.likeid);
 
-                    let response = await this.$axios.delete("/photos/" + this.photoId + "/likes/" + this.like.likeid , {
+                    let response = await this.$axios.delete("/photos/" + this.photo.PhotoID + "/likes/" + this.like.likeid , {
                         headers: {
                             'Authorization': sessionStorage.getItem("userid"),
                         }
                     });
 
                     // remove the like from photoLikes
-                    this.photoLikes = this.photoLikes.filter(like => like.LikeID !== this.like.likeid);
-                    console.log(this.photoLikes);
+                    this.photo.Likes = this.photo.Likes.filter(like => like.LikeID !== this.like.likeid);
+                    console.log(this.photo.Likes);
 
                     console.log(response);
                     console.log("Post disliked!");
@@ -101,16 +98,16 @@ export default {
 
     computed: {
         likesCount() {
-            if (!this.photoLikes) {
+            if (!this.photo.Likes) {
                 return 0;
             }
-            return this.photoLikes.length;
+            return this.photo.Likes.length;
         },
         commentCount() {
-            if (!this.photoComments) {
+            if (!this.photo.Comments) {
                 return 0;
             }
-            return this.photoComments.length;
+            return this.photo.Comments.length;
         },
     }
 }
@@ -121,17 +118,18 @@ export default {
             <div>
                 <RouterLink :to="buildUserLink()" class="nav-link">
                     <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
-                    {{ photoAuthor }}
+                    {{ photo.Author }}
                 </RouterLink>
-                <p class="photo-date-rigth">{{ formatDateFromUnix(photoDate) }}</p>
+                <p class="photo-date-rigth">{{ formatDateFromUnix(photo.DateAndTime) }}</p>
             </div>
         </div>
         <div class="image-container">
-            <img :src="photoLocation" :alt="photoDescription"><br>
+            <img :src="photo.File">
+            <!-- <img :src="photoLocation" :alt="photoDescription"><br> -->
         </div>
         <div class="descdate-div">
             <br>
-            <p>{{ photoDescription }}</p>
+            <p>{{ photo.Description }}</p>
         </div>
         <div class="like-comment-div">
             <div class="btn-group" role="group" aria-label="Basic example">

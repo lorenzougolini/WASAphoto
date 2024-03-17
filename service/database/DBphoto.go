@@ -48,7 +48,7 @@ func (db *appdbimpl) GetPhotoData(photoid string) (PhotoData, error) {
 	var photodata PhotoData
 	photodata.PhotoID = photoid
 
-	err := db.c.QueryRow("SELECT authorid, description, dateAndTime FROM photos WHERE photoid = ?", photoid).Scan(&photodata.Author, &photodata.Description, &photodata.DateAndTime)
+	err := db.c.QueryRow("SELECT picFile, authorid, description, dateAndTime FROM photos WHERE photoid = ?", photoid).Scan(&photodata.File, &photodata.Author, &photodata.Description, &photodata.DateAndTime)
 	if errors.Is(err, sql.ErrNoRows) {
 		return photodata, err
 	}
