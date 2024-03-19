@@ -53,6 +53,7 @@ type AppDatabase interface {
 
 	PostPhoto(photo string) error
 	GetPhotoById(photoid string) (bool, Photo, error)
+	GetPhotoData(photoid string) (PhotoData, error)
 	RemovePhoto(photoid string) error
 
 	AddLike(like string) error

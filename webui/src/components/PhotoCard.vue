@@ -20,7 +20,7 @@ export default {
         return {
             loading: false,
             errormsg: null,
-            like: this.checkLiked(),
+            // like: this.isLiked(),
         }
     },
 
@@ -31,16 +31,24 @@ export default {
         },
 
         buildUserLink() {
-            return "/users/" + this.photoAuthor;
+            return "/users/" + this.photo.Author;
         },
 
-        checkLiked() {
-            if (!this.photoLikes) {
+        // isLiked() {
+        //     if (!this.photo.Likes) {
+        //         return false;
+        //     }
+        //     console.log(this.photo.Likes);
+        //     return this.photo.Likes.some(like => like.Usermane === sessionStorage.getItem("username"));
+        // },
+
+        isLiked() {
+            if (!this.photo.Likes) {
                 return {"liked": false, "likeid": null};
             }
 
-            for (let i = 0; i < this.photoLikes.length; i++) {
-                const like = this.photoLikes[i]; 
+            for (let i = 0; i < this.photo.Likes.length; i++) {
+                const like = this.photo.Likes[i]; 
                 if (like.Username === sessionStorage.getItem("username")) {
                     console.log("the likeid is: " + like.LikeID);
                     return {"liked": true, "likeid": like.LikeID};
@@ -49,50 +57,53 @@ export default {
             return {"liked": false, "likeid": null};
         },
 
-        async toggleLike() {
+        toggleLike() {
+            if (this.isLiked().liked) {
+                this.unlikePhoto(this.isLiked().likeid);
+            } else {
+                this.likePhoto();
+            }
+        },
+
+        async likePhoto() {
             this.loading = true;   
             this.errormsg = null;
 
-            if (!this.like.liked) {
-                try {         
-                    let response = await this.$axios.post("/photos/" + this.photo.PhotoID + "/likes", {},{
-                        headers: {
-                            'Authorization': sessionStorage.getItem("userid"),
-                        }
-                    });
+            try {         
+                let response = await this.$axios.post("/photos/" + this.photo.PhotoID + "/likes", {},{
+                    headers: {
+                        'Authorization': sessionStorage.getItem("userid"),
+                    }
+                });
 
-                    console.log(response);
-                    console.log("Post liked!");
+                this.photo.Likes = response.data.Likes;
 
-                } catch (e) {
-                    this.errormsg = e.toString();
+                console.log("Post liked!");
 
-                }
-                this.loading = false;
+            } catch (e) {
+                this.errormsg = e.toString();
 
-            } else {
-
-                try {
-
-                    let response = await this.$axios.delete("/photos/" + this.photo.PhotoID + "/likes/" + this.like.likeid , {
-                        headers: {
-                            'Authorization': sessionStorage.getItem("userid"),
-                        }
-                    });
-
-                    // remove the like from photoLikes
-                    this.photo.Likes = this.photo.Likes.filter(like => like.LikeID !== this.like.likeid);
-                    console.log(this.photo.Likes);
-
-                    console.log(response);
-                    console.log("Post disliked!");
-
-                } catch (e) {
-                    this.errormsg = e.toString();
-                }
-                this.loading = false;
             }
-            
+            this.loading = false;
+        },
+        
+        async unlikePhoto(likeid) {
+            try {
+
+                let response = await this.$axios.delete("/photos/" + this.photo.PhotoID + "/likes/" + likeid , {
+                    headers: {
+                        'Authorization': sessionStorage.getItem("userid"),
+                    }
+                });
+
+                this.photo.Likes = response.data.Likes;
+
+                console.log("Post disliked!");
+
+            } catch (e) {
+                this.errormsg = e.toString();
+            }
+            this.loading = false;
         },
     },
 
@@ -109,7 +120,7 @@ export default {
             }
             return this.photo.Comments.length;
         },
-    }
+    },
 }
 </script>
 <template>
@@ -133,11 +144,17 @@ export default {
         </div>
         <div class="like-comment-div">
             <div class="btn-group" role="group" aria-label="Basic example">
-                <button type="button" @click="toggleLike()"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#like"/></svg>Likes: {{ likesCount }}</button>
+                <!-- <button class="btn btn-sm btn-outline-danger" @click="toggleLike()"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#like"/></svg>Likes: {{ likesCount }}</button> -->
+                <button class="btn btn-sm" :class="{ 'btn-outline-danger': !isLiked.liked, 'btn-danger': isLiked.liked }" @click="toggleLike()">
+                    <svg class="feather">
+                        <use :href="isLiked.liked ? '/feather-sprite-v4.29.0.svg#like-filled' : '/feather-sprite-v4.29.0.svg#like'" />
+                    </svg>
+                    Likes: {{ likesCount }}
+                </button>
                 <button type="button"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#comment"/></svg>Comments: {{ commentCount }}</button>
             </div>
         </div>
-        <div v-if="this.$route.params.username === photoAuthor" class="photo-delete">
+        <div v-if="this.$route.params.username === photo.Author" class="photo-delete">
             <button class="btn btn-sm btn-outline-danger" @search="$emit('delete-post')">Delete</button>
         </div>
     </div>

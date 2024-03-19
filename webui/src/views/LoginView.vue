@@ -1,13 +1,11 @@
 <script>
-import {user} from '../stores/user.js';
-
 export default {
 
 	data: function() {
 		return {
 			errormsg: null,
 			loading: false,
-			username: "",
+			loggingUsername: "",
 			logged: {},
 		}
 	},
@@ -18,27 +16,23 @@ export default {
 			this.errormsg = null; 
 			
 			try {
-				let response = await this.$axios.post("/session?username=" + this.username);
+				let response = await this.$axios.post("/session?username=" + this.loggingUsername);
 				
-				user.value.userid = response.data.UserID;
-				user.value.username = response.data.Username;
-				user.value.logged = true;
-	
 				sessionStorage.setItem("userid", response.data.UserID),
 				sessionStorage.setItem("username", response.data.Username),
 				sessionStorage.setItem("logged", true),
 				
-				this.$router.replace("/users/" + user.value.username, { 
-					headers: {
-						'Authorization': user.value.userid,
-					}
-				});
-				
-				// this.$router.replace("/stream", { 
+				// this.$router.replace("/users/" + sessionStorage.getItem("username"), { 
 				// 	headers: {
-				// 		'Authorization': user.value.userid,
+				// 		'Authorization': sessionStorage.getItem("userid"),
 				// 	}
 				// });
+				
+				this.$router.replace("/stream", { 
+					headers: {
+						'Authorization': sessionStorage.getItem("userid"),
+					}
+				});
 
 			} catch (e) {
 				this.errormsg = e.toString();
@@ -59,7 +53,7 @@ export default {
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 
 		<form @submit.prevent="login">
-			Username: <input type="text" v-model="username" /><br />
+			Username: <input type="text" v-model="loggingUsername" /><br />
 			<button class="btn-group me-2" type="submit">
 				Login
 			</button>

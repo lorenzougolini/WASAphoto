@@ -22,7 +22,7 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 	photoID := ps.ByName("photoid")
 	likeID := ps.ByName("likeid")
-	existsPhoto, unlikedPhoto, errP := rt.db.GetPhotoById(photoID)
+	existsPhoto, _, errP := rt.db.GetPhotoById(photoID)
 	existsLike, removedLike, errL := rt.db.GetLikeByLikeId(likeID)
 	if !existsPhoto {
 		w.WriteHeader(http.StatusNotFound)
@@ -51,5 +51,7 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	_ = json.NewEncoder(w).Encode(unlikedPhoto)
+	unlikedPhotoData, _ := rt.db.GetPhotoData(photoID)
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(unlikedPhotoData)
 }

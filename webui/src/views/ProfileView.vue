@@ -2,7 +2,6 @@
 import PhotoCard from '../components/PhotoCard.vue';
 import LoadingSpinner from '../components/LoadingSpinner.vue';
 import SearchBar from '../components/SearchBar.vue';
-import {user} from '../stores/user.js';
 
 export default {
     components: {

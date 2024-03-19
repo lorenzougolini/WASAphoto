@@ -85,5 +85,6 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
-	_ = json.NewEncoder(w).Encode(likingPhoto)
+	likedPhotoData, _ := rt.db.GetPhotoData(ps.ByName("photoid"))
+	_ = json.NewEncoder(w).Encode(likedPhotoData)
 }
