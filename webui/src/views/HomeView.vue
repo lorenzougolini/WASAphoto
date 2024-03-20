@@ -30,12 +30,17 @@ export default {
 				});
 
 				this.streamJson = response.data;
+				if (this.streamJson.Posts) {
+					this.streamJson.Posts.sort((a, b) => b.DateAndTime - a.DateAndTime);
+				}
+
 			} catch (e) {
 				this.errormsg = e.toString();
 			}
 			this.loading = false;
 		},
 	},
+
 	mounted() {
 		if (this.logged) {
 			this.loadStream();

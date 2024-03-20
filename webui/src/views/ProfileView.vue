@@ -15,37 +15,30 @@ export default {
 			loading: false,
             username: sessionStorage.getItem("username"),
             userid: sessionStorage.getItem("userid"),
-            shownUsername: this.$route.params.username,
+            shownUser: this.$route.params.username,
             profileJson: {},
-            picture: null,
+            description: '',
+            newUsername: '',    
 		}
 	},
 
 	methods: {
-		async loadProfile(shownUsername) {
+		async loadProfile(shownUser) {
 			this.loading = true;
 			this.errormsg = null;
+            try {
 
-            if (sessionStorage.getItem("logged")) {
-                
-                try {
+                let response = await this.$axios.get("/users/" + shownUser, {
+                    headers: {
+                        'Authorization': this.userid,
+                    }
+                });
+                this.profileJson = response.data;
 
-                    let response = await this.$axios.get("/users/" + shownUsername, {
-                        headers: {
-                            'Authorization': this.userid,
-                        }
-                    });
-                    this.profileJson = response.data;
-
-                } catch (e) {
-                    this.errormsg = e.toString();
-                    this.$router.go(-1);
-                }
-                this.loading = false;
-
-            } else {
-                this.errormsg = "You are not logged in!";
+            } catch (e) {
+                this.errormsg = e.toString();
             }
+            this.loading = false;
 		},
 
         async newPost(description, picture) {
@@ -67,12 +60,14 @@ export default {
             } catch (e) {
                 this.errormsg = e.toString();
             }
+
             this.loading = false;
             console.log("New post created!");
             this.loadProfile(this.username);
             
             // Clear form fields
             document.getElementById('post-form').reset();
+            this.description = '';
         },
 
         async deletePost(photoID) {
@@ -93,12 +88,37 @@ export default {
             this.loadProfile(this.username);
         },
 
+        async changeUsername(newUsername) {
+            this.loading = true;   
+            this.errormsg = null;
+            
+            try {        
+                let response = await this.$axios.put("/users/" + this.username, newUsername, {
+                    headers: {
+                        'Authorization': this.userid,
+                    }
+                });
+
+                console.log(response.data.Username);
+                sessionStorage.setItem("username", response.data.Username);
+                
+                console.log("Username changed!");
+                this.shownUser = response.data.Username;
+                this.username = response.data.Username;
+                this.$router.push("/users/" + response.data.Username);
+
+            } catch (e) {
+                this.errormsg = e.toString();
+            }
+            this.loading = false;
+        },
+
         async followUser(){
             this.loading = true;   
             this.errormsg = null;
             
             try {        
-                await this.$axios.put("/users/" + this.username + "/followers/" + this.shownUsername, null, {
+                await this.$axios.put("/users/" + this.username + "/followers/" + this.shownUser, null, {
                     headers: {
                         'Authorization': this.userid,
                     }
@@ -108,7 +128,7 @@ export default {
                 this.errormsg = e.toString();
             }
             this.loading = false;
-            this.loadProfile(this.shownUsername);
+            this.loadProfile(this.shownUser);
         },
 
         async unfollowUser() {
@@ -116,7 +136,7 @@ export default {
             this.errormsg = null;
             
             try {        
-                await this.$axios.delete("/users/" + this.username + "/followers/" + this.shownUsername, {
+                await this.$axios.delete("/users/" + this.username + "/followers/" + this.shownUser, {
                     headers: {
                         'Authorization': this.userid,
                     }
@@ -126,7 +146,7 @@ export default {
             }
             this.loading = false;
             console.log("User unfollowed!");
-            this.loadProfile(this.shownUsername);            
+            this.loadProfile(this.shownUser);            
         },
         
         fileUpload(event) {
@@ -176,7 +196,7 @@ export default {
     },
 
 	mounted() {
-		this.loadProfile(this.shownUsername)
+		this.loadProfile(this.shownUser)
 	}
 }
 </script>
@@ -185,13 +205,13 @@ export default {
 	<div>
 		<div
 			class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-			<h1 class="h2">Profile page</h1>
+			<h2>Profile page</h2>
             <div class="d-flex align-items-center">
-				<SearchBar @search-user="loadProfile(this.shownUsername)"/>
+				<SearchBar @search-user="loadProfile(this.shownUser)"/>
 			</div>
 			<div class="btn-toolbar mb-2 mb-md-0">
 				<div class="btn-group me-2">
-					<button type="button" class="btn btn-sm btn-outline-secondary" @click="loadProfile(shownUsername)">
+					<button type="button" class="btn btn-sm btn-outline-secondary" @click="loadProfile(shownUser)">
 						Refresh
 					</button>
 				</div>
@@ -201,35 +221,51 @@ export default {
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
         <div class="profile-container">
             <LoadingSpinner :loading="loading" />
-            <div v-if="!loading" class="photo-container">
-                <h2 class="h2">{{ shownUsername }}</h2>
-                <p>Posts: {{ numberOfPosts }}, 
-                    Followers: {{ numberOfFollowers }}, 
-                    Following: {{ numberOfFollowing }}
-                </p>
+            <div class="info-photo-container">
+                <div class="user-info">
+                    <div class="user-name">
+                        <h1>{{ shownUser }}</h1>
+                    </div>
+                    <div class="user-stats">
+                        <p>Post: {{ numberOfPosts }}</p>
+                        <p>Followers: {{ numberOfFollowers }}</p>
+                        <p>Following: {{ numberOfFollowing }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
                 <div v-if="this.profileJson.Posts" class="horizontal-photo-container">
                     <div v-for="photo in this.profilePhotos" :key="photo.PhotoID" class="horizontal-photo-div">
 
                         <PhotoCard @delete-post="deletePost(photo.PhotoID)"
-                            :photo="photo"
-                        />
+                            :photo="photo"/>
 
-                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div v-if="shownUsername == this.username" class="new-post-container">
-                <h3>New Post</h3>
-                <form id="post-form" @submit.prevent="newPost">
-                    Picture: <input type="file" v-on:change="fileUpload" /><br />
-                    Description: <input type="text" v-model="description" /><br />
-                    <br>
-                    <div class="btn-group me-2">
-                        <button type="button" class="btn btn-sm btn-outline-primary" @click="newPost(description, picture)">
-                            New Post
-                        </button>
-                    </div>
-                </form>
+            <div class="vertical-line"></div>
+            <div v-if="shownUser == this.username" class="user-actions-container">
+                <div class="new-post">
+                    <h3>New Post</h3>
+                    <form @submit.prevent="newPost">
+                        Picture: <input type="file" v-on:change="fileUpload" /><br />
+                        Description: <input type="text" v-model="description" /><br />
+                        <br>
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary" @click="newPost(description, picture)">
+                                New Post
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <hr>
+                <div class="change-username">
+                    <form>
+                        New Username: <input type="text" v-model="newUsername" /><br />
+                        <button type="button" @click="changeUsername(newUsername)">Change Username</button>
+                    </form>
+                </div>
             </div>
             <div v-else>
                 <div v-if="this.profileJson.Followers">
@@ -239,6 +275,7 @@ export default {
                     <div v-else>
                         <button class="btn btn-sm btn-outline-primary" @click="followUser()">Follow</button>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -246,6 +283,14 @@ export default {
 </template>
 
 <style>
+.profile-container {
+    display: flex;
+    flex-direction: row;
+}
+.info-photo-container {
+    width: 80%;
+    margin-right: 30px;
+}
 /* maybe do it with a grid */
 .horizontal-photo-container {
     display: flex;
@@ -255,15 +300,23 @@ export default {
 .horizontal-photo-div {
     margin-right: 10px;
 }
-
-.profile-container {
+.user-info {
     display: flex;
-    flex-direction: row;
+    align-items: center;
 }
-.photo-container {
-    width: 80%;
+.user-name {
+    flex: 0
 }
-.new-post-container {
+.user-stats {
+    flex: 5;
+    align-items: center; 
+    margin-left: 20px; 
+}
+.user-stats p {
+    margin: 0; 
+    margin-right: 10px; 
+}
+.user-actions-container {
     width: 30%;
 }
 </style>

@@ -42,6 +42,7 @@ type AppDatabase interface {
 	SetName(userid string, username string) error
 	CheckIDExistence(userid string) (bool, error)
 	GetByUsername(username string) (User, error)
+	GetById(userid string) (User, error)
 	GetProfile(userid string) (Profile, error)
 
 	FollowUser(followerId string, followedId string) error

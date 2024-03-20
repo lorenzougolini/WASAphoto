@@ -51,6 +51,7 @@ type PhotoData struct {
 }
 
 type Profile struct {
+	Username  string
 	Posts     []PhotoData
 	Followers struct {
 		Usernames         []string

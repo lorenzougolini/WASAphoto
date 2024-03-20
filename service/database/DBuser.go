@@ -60,6 +60,13 @@ func (db *appdbimpl) GetProfile(userid string) (Profile, error) {
 
 	profile := Profile{}
 
+	// get user
+	user, err := db.GetById(userid)
+	if err != nil {
+		return profile, fmt.Errorf(errRetrievingProfile, err)
+	}
+	profile.Username = user.Username
+
 	// get photos
 	photoRows, err := db.c.Query("SELECT photoid FROM photos WHERE authorid = ? ORDER BY dateAndTime DESC;", userid)
 	if err != nil {
