@@ -26,6 +26,7 @@ export default {
     },
 
     methods: {
+
         formatDateFromUnix(unixDate) {
             let normalDate = new Date(unixDate * 1000);
             return normalDate.toLocaleString('it-EU');
@@ -60,6 +61,10 @@ export default {
 
         toggleComments() {
             this.showComments = !this.showComments; 
+        },
+
+        canDeleteComment(comment) {
+            return comment.Username === sessionStorage.getItem("username");
         },
 
         async likePhoto() {
@@ -164,63 +169,52 @@ export default {
             }
             return this.photo.Comments.length;
         },
+        canDeletePhoto() {
+            return this.photo.Author === sessionStorage.getItem("username");
+        },
     },
 }
 </script>
 <template>
     <div class="photo-card">
-        <div class="picture-section">
-            <div class="author-container">
-                <div>
-                    <RouterLink :to="buildUserLink()" class="nav-link">
-                        <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
-                        {{ photo.Author }}
-                    </RouterLink>
-                    <p class="photo-date-rigth">{{ formatDateFromUnix(photo.DateAndTime) }}</p>
-                </div>
-            </div>
-            <div class="image-container">
-                <img :src="photo.File">
-            </div>
-            <div class="descdate-div">
-                <br>
-                <p>{{ photo.Description }}</p>
-            </div>
-            <div class="like-comment-div">
-                <div class="btn-group" role="group" aria-label="Basic example">
-                    <!-- <button class="btn btn-sm btn-outline-danger" @click="toggleLike()"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#like"/></svg>Likes: {{ likesCount }}</button> -->
-                    <button class="btn btn-sm" :class="{ 'btn-outline-danger': !isLiked.liked, 'btn-danger': isLiked.liked }" @click="toggleLike()">
-                        Likes: {{ likesCount }}
-                    </button>
-                    <button class="btn btn-sm btn-outline-primary" @click="toggleComments()">Comments: {{ commentCount }}</button>
-                    <div v-show="showComments" class="comment-section">
-                        <div v-for="comment in photo.Comments" :key="comment.CommentID">
-                            <p>{{ comment.Username }}: {{ comment.CommentText }}</p>
-                            <hr/>
-                            <button class="btn btn-sm btn-outline-danger" @click="uncommentPhoto(comment.CommentID)">Delete</button>
-                        </div>
-                        <div>
-                            <input id="comment-input" type="text" v-model="comment" />
-                            <button class="btn btn-sm btn-outline-primary" @click="commentPhoto()">Comment</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div v-if="this.$route.params.username === photo.Author" class="photo-delete">
-                <button class="btn btn-sm btn-outline-danger" @search="$emit('delete-post')">Delete</button>
+        <div class="author-container">
+            <div>
+                <RouterLink :to="buildUserLink()" class="nav-link">
+                    <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
+                    {{ photo.Author }}
+                </RouterLink>
+                <p class="photo-date-rigth">{{ formatDateFromUnix(photo.DateAndTime) }}</p>
             </div>
         </div>
-        <!-- <div class="comment-section">
-            <div v-for="comment in photo.Comments" :key="comment.CommentID">
-                <p>{{ comment.CommentText }}</p>
-                <p>{{ comment.Author }}</p>
-                <button class="btn btn-sm btn-outline-danger" @click="uncommentPhoto(comment.CommentID)">Delete</button>
+        <div class="image-container">
+            <img :src="photo.File">
+        </div>
+        <div class="descdate-div">
+            <br>
+            <p>{{ photo.Description }}</p>
+        </div>
+        <div class="like-comment-div">
+            <div class="btn-group" role="group" aria-label="Basic example">
+                <button class="btn btn-sm" :class="{'btn-danger': isLiked.liked, 'btn-outline-danger': !isLiked.liked }" @click="toggleLike()">
+                    Likes: {{ likesCount }}
+                </button>
+                <button class="btn btn-sm btn-outline-primary" @click="toggleComments()">Comments: {{ commentCount }}</button>
             </div>
-            <div>
-                <input type="text" v-model="comment" />
-                <button class="btn btn-sm btn-outline-primary" @click="commentPhoto()">Comment</button>
+            <div v-show="showComments" class="comment-section">
+                <div v-for="comment in photo.Comments" :key="comment.CommentID">
+                    <p>{{ comment.Username }}: {{ comment.CommentText }}</p>
+                    <hr/>
+                    <div v-show="canDeleteComment(comment)"><button class="btn btn-sm btn-outline-danger" @click="uncommentPhoto(comment.CommentID)">Delete</button></div>
+                </div>
+                <div>
+                    <input id="comment-input" type="text" v-model="comment" />
+                    <button class="btn btn-sm btn-outline-primary" @click="commentPhoto()">Comment</button>
+                </div>
             </div>
-        </div> -->
+        </div>
+        <div v-show="canDeletePhoto" class="photo-delete">
+            <button class="btn btn-sm btn-outline-danger" @click="$emit('delete-post')">Delete</button>
+        </div>
     </div>
 </template>
 
@@ -242,6 +236,18 @@ export default {
     display: flex;
     cursor: pointer;
 }
+
+.comment-section {
+    margin-top: 10px;
+}
+
+/* .like-comment-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 5px;
+} */
+
 .author-container div {
     display: flex;
     align-items: center;
