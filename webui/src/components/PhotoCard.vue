@@ -20,7 +20,8 @@ export default {
         return {
             loading: false,
             errormsg: null,
-            // like: this.isLiked(),
+            showComments: false,
+            comment: '',
         }
     },
 
@@ -33,14 +34,6 @@ export default {
         buildUserLink() {
             return "/users/" + this.photo.Author;
         },
-
-        // isLiked() {
-        //     if (!this.photo.Likes) {
-        //         return false;
-        //     }
-        //     console.log(this.photo.Likes);
-        //     return this.photo.Likes.some(like => like.Usermane === sessionStorage.getItem("username"));
-        // },
 
         isLiked() {
             if (!this.photo.Likes) {
@@ -63,6 +56,10 @@ export default {
             } else {
                 this.likePhoto();
             }
+        },
+
+        toggleComments() {
+            this.showComments = !this.showComments; 
         },
 
         async likePhoto() {
@@ -105,6 +102,53 @@ export default {
             }
             this.loading = false;
         },
+        
+        async commentPhoto() {
+            this.loading = true;   
+            this.errormsg = null;
+
+            try {         
+                let response = await this.$axios.post("/photos/" + this.photo.PhotoID + "/comments", {
+                    "comment": this.comment
+                },{
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': sessionStorage.getItem("userid"),
+                    }
+                });
+
+                this.photo.Comments = response.data.Comments;
+
+                this.comment = '';
+                console.log("Comment posted!");
+
+            } catch (e) {
+                this.errormsg = e.toString();
+
+            }
+            this.loading = false;
+        },
+        
+        async uncommentPhoto(commentid) {
+            try {
+
+                let response = await this.$axios.delete("/photos/" + this.photo.PhotoID + "/comments/" + commentid , {
+                    headers: {
+                        'Authorization': sessionStorage.getItem("userid"),
+                    }
+                });
+
+                this.photo.Comments = response.data.Comments;
+
+                console.log("Comment deleted!");
+
+            } catch (e) {
+                this.errormsg = e.toString();
+            }
+            this.loading = false;
+        },
+
+        
     },
 
     computed: {
@@ -125,38 +169,58 @@ export default {
 </script>
 <template>
     <div class="photo-card">
-        <div class="author-container">
+        <div class="picture-section">
+            <div class="author-container">
+                <div>
+                    <RouterLink :to="buildUserLink()" class="nav-link">
+                        <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
+                        {{ photo.Author }}
+                    </RouterLink>
+                    <p class="photo-date-rigth">{{ formatDateFromUnix(photo.DateAndTime) }}</p>
+                </div>
+            </div>
+            <div class="image-container">
+                <img :src="photo.File">
+            </div>
+            <div class="descdate-div">
+                <br>
+                <p>{{ photo.Description }}</p>
+            </div>
+            <div class="like-comment-div">
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <!-- <button class="btn btn-sm btn-outline-danger" @click="toggleLike()"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#like"/></svg>Likes: {{ likesCount }}</button> -->
+                    <button class="btn btn-sm" :class="{ 'btn-outline-danger': !isLiked.liked, 'btn-danger': isLiked.liked }" @click="toggleLike()">
+                        Likes: {{ likesCount }}
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" @click="toggleComments()">Comments: {{ commentCount }}</button>
+                    <div v-show="showComments" class="comment-section">
+                        <div v-for="comment in photo.Comments" :key="comment.CommentID">
+                            <p>{{ comment.Username }}: {{ comment.CommentText }}</p>
+                            <hr/>
+                            <button class="btn btn-sm btn-outline-danger" @click="uncommentPhoto(comment.CommentID)">Delete</button>
+                        </div>
+                        <div>
+                            <input id="comment-input" type="text" v-model="comment" />
+                            <button class="btn btn-sm btn-outline-primary" @click="commentPhoto()">Comment</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-if="this.$route.params.username === photo.Author" class="photo-delete">
+                <button class="btn btn-sm btn-outline-danger" @search="$emit('delete-post')">Delete</button>
+            </div>
+        </div>
+        <!-- <div class="comment-section">
+            <div v-for="comment in photo.Comments" :key="comment.CommentID">
+                <p>{{ comment.CommentText }}</p>
+                <p>{{ comment.Author }}</p>
+                <button class="btn btn-sm btn-outline-danger" @click="uncommentPhoto(comment.CommentID)">Delete</button>
+            </div>
             <div>
-                <RouterLink :to="buildUserLink()" class="nav-link">
-                    <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
-                    {{ photo.Author }}
-                </RouterLink>
-                <p class="photo-date-rigth">{{ formatDateFromUnix(photo.DateAndTime) }}</p>
+                <input type="text" v-model="comment" />
+                <button class="btn btn-sm btn-outline-primary" @click="commentPhoto()">Comment</button>
             </div>
-        </div>
-        <div class="image-container">
-            <img :src="photo.File">
-            <!-- <img :src="photoLocation" :alt="photoDescription"><br> -->
-        </div>
-        <div class="descdate-div">
-            <br>
-            <p>{{ photo.Description }}</p>
-        </div>
-        <div class="like-comment-div">
-            <div class="btn-group" role="group" aria-label="Basic example">
-                <!-- <button class="btn btn-sm btn-outline-danger" @click="toggleLike()"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#like"/></svg>Likes: {{ likesCount }}</button> -->
-                <button class="btn btn-sm" :class="{ 'btn-outline-danger': !isLiked.liked, 'btn-danger': isLiked.liked }" @click="toggleLike()">
-                    <svg class="feather">
-                        <use :href="isLiked.liked ? '/feather-sprite-v4.29.0.svg#like-filled' : '/feather-sprite-v4.29.0.svg#like'" />
-                    </svg>
-                    Likes: {{ likesCount }}
-                </button>
-                <button type="button"><svg class="feather"><use href="/feather-sprite-v4.29.0.svg#comment"/></svg>Comments: {{ commentCount }}</button>
-            </div>
-        </div>
-        <div v-if="this.$route.params.username === photo.Author" class="photo-delete">
-            <button class="btn btn-sm btn-outline-danger" @search="$emit('delete-post')">Delete</button>
-        </div>
+        </div> -->
     </div>
 </template>
 

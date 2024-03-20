@@ -36,10 +36,6 @@ export default {
                         }
                     });
                     this.profileJson = response.data;
-                    
-                    // for (let i = 0; i < this.profileJson.Posts; i++) {
-                    //     this.profileJson.Posts[i].File = 'data:image/*;base64,' + this.profileJson.Posts[i].File
-                    // }
 
                 } catch (e) {
                     this.errormsg = e.toString();
@@ -76,8 +72,7 @@ export default {
             this.loadProfile(this.username);
             
             // Clear form fields
-            this.description = '';
-            this.$refs.fileUpload.value = null;
+            document.getElementById('post-form').reset();
         },
 
         async deletePost(photoID) {
@@ -225,7 +220,7 @@ export default {
 
             <div v-if="shownUsername == this.username" class="new-post-container">
                 <h3>New Post</h3>
-                <form @submit.prevent="newPost">
+                <form id="post-form" @submit.prevent="newPost">
                     Picture: <input type="file" v-on:change="fileUpload" /><br />
                     Description: <input type="text" v-model="description" /><br />
                     <br>
