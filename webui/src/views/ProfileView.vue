@@ -15,8 +15,10 @@ export default {
 			loading: false,
             username: sessionStorage.getItem("username"),
             userid: sessionStorage.getItem("userid"),
+            logged: sessionStorage.getItem("logged"),
             shownUser: this.$route.params.username,
             profileJson: {},
+            banned: false,
             description: '',
             newUsername: '',    
 		}
@@ -34,6 +36,7 @@ export default {
                     }
                 });
                 this.profileJson = response.data;
+                this.banned = this.profileJson.Banned;
 
             } catch (e) {
                 this.errormsg = e.toString();
@@ -106,6 +109,7 @@ export default {
                 this.shownUser = response.data.Username;
                 this.username = response.data.Username;
                 this.$router.push("/users/" + response.data.Username);
+                this.loadProfile(this.shownUser);
 
             } catch (e) {
                 this.errormsg = e.toString();
@@ -147,6 +151,42 @@ export default {
             this.loading = false;
             console.log("User unfollowed!");
             this.loadProfile(this.shownUser);            
+        },
+
+        async banUser() {
+            this.loading = true;   
+            this.errormsg = null;
+            
+            try {        
+                await this.$axios.put("/users/" + this.username + "/banned/" + this.shownUser, null, {
+                    headers: {
+                        'Authorization': this.userid,
+                    }
+                });
+            } catch (e) {
+                this.errormsg = e.toString();
+            }
+            this.loading = false;
+            console.log("User banned!");
+            this.loadProfile(this.shownUser);
+        },
+        
+        async unbanUser() {
+            this.loading = true;   
+            this.errormsg = null;
+            
+            try {        
+                await this.$axios.delete("/users/" + this.username + "/banned/" + this.shownUser, {
+                    headers: {
+                        'Authorization': this.userid,
+                    }
+                });
+            } catch (e) {
+                this.errormsg = e.toString();
+            }
+            this.loading = false;
+            console.log("User unbanned!");
+            this.loadProfile(this.shownUser);
         },
         
         fileUpload(event) {
@@ -267,15 +307,20 @@ export default {
                     </form>
                 </div>
             </div>
-            <div v-else>
+            <div v-else class="button-container">
                 <div v-if="this.profileJson.Followers">
                     <div v-if="followedByYou()">
-                        <button class="btn btn-sm btn-outline-primary" @click="unfollowUser()">Unfollow</button>
+                        <button id="unfollow-user-button" class="btn btn-sm btn-outline-primary" @click="unfollowUser()">Unfollow</button>
                     </div>
                     <div v-else>
-                        <button class="btn btn-sm btn-outline-primary" @click="followUser()">Follow</button>
+                        <button id="follow-user-button" class="btn btn-sm btn-outline-primary" @click="followUser()">Follow</button>
                     </div>
-
+                </div>
+                <div v-if="this.banned">
+                    <button id="unfollow-user-button" class="btn btn-sm btn-outline-primary" @click="unbanUser()">Unban</button>
+                </div>
+                <div v-else>
+                    <button id="follow-user-button" class="btn btn-sm btn-outline-primary" @click="banUser()">Ban</button>
                 </div>
             </div>
         </div>
@@ -305,10 +350,10 @@ export default {
     align-items: center;
 }
 .user-name {
-    flex: 0
+    flex: 1
 }
 .user-stats {
-    flex: 5;
+    flex: 4;
     align-items: center; 
     margin-left: 20px; 
 }
@@ -318,5 +363,10 @@ export default {
 }
 .user-actions-container {
     width: 30%;
+}
+.button-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); 
+  grid-gap: 5px;
 }
 </style>

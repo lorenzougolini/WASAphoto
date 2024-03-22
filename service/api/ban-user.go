@@ -39,15 +39,15 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 
-	err1 := rt.db.BanUser(token, bannedUser.UserID)
-	if err1 != nil {
+	err = rt.db.BanUser(token, bannedUser.UserID)
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(err)
 		return
 	}
 
-	err2 := rt.db.UnfollowUser(token, bannedUser.Username)
-	if err2 != nil {
+	err = rt.db.UnfollowUser(token, bannedUser.UserID)
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(err)
 		return

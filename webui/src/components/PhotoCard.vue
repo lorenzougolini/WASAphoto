@@ -202,7 +202,7 @@ export default {
             </div>
             <div v-show="showComments" class="comment-section">
                 <div v-for="comment in photo.Comments" :key="comment.CommentID">
-                    <p>{{ comment.Username }}: {{ comment.CommentText }}</p>
+                    <p><b>{{ comment.Username }}</b>: {{ comment.CommentText }}</p>
                     <hr/>
                     <div v-show="canDeleteComment(comment)"><button class="btn btn-sm btn-outline-danger" @click="uncommentPhoto(comment.CommentID)">Delete</button></div>
                 </div>
@@ -225,7 +225,7 @@ export default {
     padding: 5px;
     margin: 5px;
     width: 500px;
-    /* height: 100%; */
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -241,17 +241,10 @@ export default {
     margin-top: 10px;
 }
 
-/* .like-comment-div {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 5px;
-} */
-
 .author-container div {
     display: flex;
     align-items: center;
-    padding: 5px;
+    padding: 3px;
     font-size:16px
 }
 .author-container div .nav-link {
@@ -263,9 +256,9 @@ export default {
     font-family: sans-serif;
     margin: 0;
 }
-/* .author-container div:hover {
+.author-container div:hover {
     background-color: #e6e6e6;
-}    */
+}   
 .image-container {
     height: 500px;
     overflow: hidden;

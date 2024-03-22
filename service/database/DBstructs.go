@@ -61,6 +61,7 @@ type Profile struct {
 		Usernames         []string
 		NumberOfFollowing int
 	}
+	Banned bool
 }
 
 type Stream struct {
