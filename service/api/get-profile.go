@@ -32,8 +32,8 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 	user, err := rt.db.GetByUsername(username)
 	if err != nil {
-		message = "No user"
-		w.WriteHeader(http.StatusBadRequest)
+		message = "No user found"
+		w.WriteHeader(http.StatusNotFound)
 		_ = json.NewEncoder(w).Encode(message)
 		return
 	}

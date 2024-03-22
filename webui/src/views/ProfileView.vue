@@ -18,7 +18,6 @@ export default {
             logged: sessionStorage.getItem("logged"),
             shownUser: this.$route.params.username,
             profileJson: {},
-            banned: false,
             description: '',
             newUsername: '',    
 		}
@@ -35,11 +34,11 @@ export default {
                         'Authorization': this.userid,
                     }
                 });
+
                 this.profileJson = response.data;
-                this.banned = this.profileJson.Banned;
 
             } catch (e) {
-                this.errormsg = e.toString();
+                this.errormsg = e.response.data;
             }
             this.loading = false;
 		},
@@ -242,12 +241,13 @@ export default {
 </script>
 
 <template>
-	<div>
-		<div
-			class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-			<h2>Profile page</h2>
-            <div class="d-flex align-items-center">
-				<SearchBar @search-user="loadProfile(this.shownUser)"/>
+    <!-- <h1 v-if="!this.logged" class="positive-banner" style="margin-top: 40px;">Please log-in to see profile contents</h1> -->
+    <div>
+        <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h2>Profile page</h2>
+        <div class="d-flex align-items-center">
+            <SearchBar @search-user="loadProfile(this.shownUser)"/>
 			</div>
 			<div class="btn-toolbar mb-2 mb-md-0">
 				<div class="btn-group me-2">
@@ -257,9 +257,9 @@ export default {
 				</div>
 			</div>
 		</div>
-
+        
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
-        <div class="profile-container">
+        <div v-else class="profile-container">
             <LoadingSpinner :loading="loading" />
             <div class="info-photo-container">
                 <div class="user-info">
@@ -316,7 +316,7 @@ export default {
                         <button id="follow-user-button" class="btn btn-sm btn-outline-primary" @click="followUser()">Follow</button>
                     </div>
                 </div>
-                <div v-if="this.banned">
+                <div v-if="this.profileJson.Banned">
                     <button id="unfollow-user-button" class="btn btn-sm btn-outline-primary" @click="unbanUser()">Unban</button>
                 </div>
                 <div v-else>

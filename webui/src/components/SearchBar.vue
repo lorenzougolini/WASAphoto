@@ -34,7 +34,7 @@ export default {
 <template>
     <div class="search-container">
         <div class="search-bar">
-            <input v-model="searchUser" @keyup.enter="handleSearch" placeholder="Search..." class="center-placeholder">
+            <input v-model="searchUser" @keyup.enter="handleSearch" placeholder="Search user..." class="center-placeholder">
             <button @click="handleSearch" class="btn">
                 <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#search"/></svg>
             </button>
