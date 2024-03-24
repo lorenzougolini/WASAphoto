@@ -298,7 +298,7 @@ export default {
             <div v-if="shownUser == this.username" class="user-actions-container">
                 <div class="new-post">
                     <h3>New Post</h3>
-                    <form @submit.prevent="newPost">
+                    <form id="post-form" @submit.prevent="newPost">
                         Picture: <input type="file" v-on:change="fileUpload" /><br />
                         Description: <input type="text" v-model="description" /><br />
                         <br>

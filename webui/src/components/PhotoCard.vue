@@ -65,7 +65,7 @@ export default {
         },
 
         canDeleteComment(comment) {
-            return comment.Username === sessionStorage.getItem("username");
+            return comment.Username === sessionStorage.getItem("username") || this.photo.Author === sessionStorage.getItem("username");
         },
 
         async likePhoto() {
@@ -138,13 +138,13 @@ export default {
         async uncommentPhoto(commentid) {
             try {
 
-                let response = await this.$axios.delete("/photos/" + this.photo.PhotoID + "/comments/" + commentid , {
+                await this.$axios.delete("/photos/" + this.photo.PhotoID + "/comments/" + commentid , {
                     headers: {
                         'Authorization': sessionStorage.getItem("userid"),
                     }
                 });
 
-                this.photo.Comments = response.data.Comments;
+                this.photo.Comments = this.photo.Comments.filter(comment => comment.CommentID !== commentid);
 
                 console.log("Comment deleted!");
 
@@ -172,6 +172,9 @@ export default {
         canDeletePhoto() {
             return this.photo.Author === sessionStorage.getItem("username");
         },
+        decodedPhoto() {
+            return "data:image/*;base64," + this.photo.File;
+        },
     },
 
 }
@@ -188,7 +191,7 @@ export default {
             </div>
         </div>
         <div class="image-container">
-            <img :src="this.imageUrl" alt="Image not loaded" />
+            <img :src="decodedPhoto" alt="Image not loaded" />
         </div>
         <div class="descdate-div">
             <br>
@@ -199,13 +202,20 @@ export default {
                 <button class="btn btn-sm" :class="{'btn-danger': isLiked.liked, 'btn-outline-danger': !isLiked.liked }" @click="toggleLike()">
                     Likes: {{ likesCount }}
                 </button>
-                <button class="btn btn-sm btn-outline-primary" @click="toggleComments()">Comments: {{ commentCount }}</button>
+                <button class="btn btn-sm btn-outline-primary" @click="toggleComments()">View comments: {{ commentCount }}</button>
             </div>
             <div v-show="showComments" class="comment-section">
-                <div v-for="comment in photo.Comments" :key="comment.CommentID">
-                    <p><b>{{ comment.Username }}</b>: {{ comment.CommentText }}</p>
-                    <hr/>
-                    <div v-show="canDeleteComment(comment)"><button class="btn btn-sm btn-outline-danger" @click="uncommentPhoto(comment.CommentID)">Delete</button></div>
+                <div v-for="comment in photo.Comments" :key="comment.CommentID" class="comment">
+                    <div class="comment-text">
+                        <p><b>{{ comment.Username }}</b>: {{ comment.CommentText }}</p>
+                        <hr/>
+                    </div>
+                    
+                    <div v-show="canDeleteComment(comment)" class="delete-comment">
+                        <button class="btn btn-sm" @click="uncommentPhoto(comment.CommentID)">
+                            <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#trash"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <input id="comment-input" type="text" v-model="comment" />
@@ -241,6 +251,26 @@ export default {
 .comment-section {
     margin-top: 10px;
 }
+.comment {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comment-content {
+    flex-grow: 1;
+}
+
+.delete-comment {
+    margin-left: 10px; /* Adjust as needed */
+}
+
+.delete-comment button {
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
 
 .author-container div {
     display: flex;
@@ -261,14 +291,19 @@ export default {
     background-color: #e6e6e6;
 }   
 .image-container {
-    height: 500px;
+    height: 400px;
     overflow: hidden;
-}
-.image-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    /* border: 1px solid grey; */
     border-radius: 5px;
+}
+
+.image-container img {
+    max-width: 100%; 
+    max-height: 100%; 
+    object-fit: contain;
 }
 .photo-delete {
     display: flex;

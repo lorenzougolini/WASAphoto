@@ -10,7 +10,7 @@ import (
 func (db *appdbimpl) GetPhotoById(photoid string) (bool, Photo, error) {
 
 	var photo Photo
-	err := db.c.QueryRow("SELECT * FROM photos WHERE photoid = ?", photoid).Scan(&photo.PhotoID, &photo.AuthorID, &photo.PicPath, &photo.DateAndTime, &photo.Description)
+	err := db.c.QueryRow("SELECT * FROM photos WHERE photoid = ?", photoid).Scan(&photo.PhotoID, &photo.AuthorID, &photo.PicFile, &photo.DateAndTime, &photo.Description)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, photo, fmt.Errorf("error retreiving the photo")
 	}
@@ -21,10 +21,9 @@ func (db *appdbimpl) PostPhoto(photo string) error {
 
 	posted_photo := Photo{}
 	_ = json.Unmarshal([]byte(photo), &posted_photo)
-	// fmt.Printf("%v", posted_photo)
 
 	stmt, _ := db.c.Prepare("INSERT INTO photos VALUES (?, ?, ?, ?, ?)")
-	_, err := stmt.Exec(posted_photo.PhotoID, posted_photo.AuthorID, posted_photo.PicPath, posted_photo.DateAndTime, posted_photo.Description)
+	_, err := stmt.Exec(posted_photo.PhotoID, posted_photo.AuthorID, posted_photo.PicFile, posted_photo.DateAndTime, posted_photo.Description)
 	if err != nil {
 		return fmt.Errorf("error uploading the photo")
 	}

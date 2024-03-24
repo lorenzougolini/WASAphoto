@@ -3,7 +3,7 @@ servers:
   - url: "http://localhost:3000"
 
 info:
-  title: WASAPhoto
+  title: WASAPhoto API 
   description: |-
     Keep in touch with your friends by sharing photos of special moments, thanks to WASAPhoto! You can
     upload your photos directly from your PC, and they will be visible to everyone following you.
@@ -22,8 +22,8 @@ components:
       type: string
       pattern: '^[0-9a-f]{12}$'
       example: '0800275d0f23'
-      minLength: 36
-      maxLength: 36
+      minLength: 12
+      maxLength: 12
 
     User:
       title: User
@@ -90,6 +90,7 @@ components:
           format: binary
           minLength: 67
           maxLength: 1000000000
+          maximum: 3145728
         dateAndTime:
           description: The date and hour when the image was uploaded
           type: string
@@ -101,13 +102,13 @@ components:
         likes:
           description: The list of users who liked a photo
           type: array
-          items: { $ref: '#/components/schemas/uuid' }
+          items: { $ref: '#/components/schemas/Like' }
           minItems: 0
           maxItems: 10000
         comments:
           description: The list of users who commented a photo along with their comment
           type: array
-          items: { $ref: '#/components/schemas/uuid' }
+          items: { $ref: '#/components/schemas/Comment' }
           minItems: 0
           maxItems: 10000
 
@@ -145,6 +146,7 @@ components:
         commentText:
           description: The text of the comment
           type: string
+          pattern: '^.*?$'
           example: "Nice photo!"
           minLength: 1
           maxLength: 100

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"WASAphoto.uniroma1.it/WASAphoto/service/api/reqcontext"
 	"github.com/gofrs/uuid"
@@ -13,7 +14,7 @@ import (
 func (rt *_router) userLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("content-type", "application/json")
 
-	username := r.URL.Query().Get("username")
+	username := strings.TrimSpace(r.URL.Query().Get("username"))
 	var message string
 	// check valid username
 	if username == "" || len(username) < 3 || len(username) > 16 {

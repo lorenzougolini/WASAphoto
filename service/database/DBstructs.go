@@ -8,7 +8,7 @@ type User struct {
 type Photo struct {
 	PhotoID     string
 	AuthorID    string
-	PicPath     string
+	PicFile     []byte
 	DateAndTime string
 	Description string
 }

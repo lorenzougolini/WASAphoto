@@ -2,10 +2,11 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
+
+	// "fmt"
+	// "io"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -36,52 +37,55 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		newPhotoID = formatId(generateID.String())
 	}
 
-	err = r.ParseMultipartForm(10 << 20)
+	err = r.ParseMultipartForm(5 << 20)
 	if err != nil {
 		message = ("Failed to read request body")
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(message)
 		return
 	}
+
 	picture, picHandler, err := r.FormFile("picture")
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode("Error retrieving the file")
 		return
 	}
 	defer picture.Close()
-	description := r.FormValue("description")
 
-	picDir := "./service/imgDB/"
-	if _, err := os.Stat(picDir); os.IsNotExist(err) {
-		err := os.Mkdir(picDir, os.ModePerm)
-		if err != nil {
-			_ = json.NewEncoder(w).Encode("Error creating upload directory")
-			return
-		}
+	// Check file size
+	fileSize := picHandler.Size
+	if fileSize > 3*1024*1024 { // Check if file size exceeds 3MB
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("File size exceeds size limit")
+		return
 	}
+
+	// Opena and read image data
+	file, err := picHandler.Open()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("Error retrieving the file")
+		return
+	}
+	defer file.Close()
+	picData, err := io.ReadAll(file)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode("Error retrieving the file")
+		return
+	}
+
+	description := r.FormValue("description")
 
 	// create new Photo object
 	newPhoto := Photo{
 		PhotoID:     newPhotoID,
 		AuthorID:    token,
-		PicPath:     picDir + newPhotoID + ".jpg",
+		PicFile:     picData,
 		DateAndTime: strconv.FormatInt(time.Now().Unix(), 10),
 		Description: description,
 	}
-
-	dst, err := os.Create(newPhoto.PicPath)
-	if err != nil {
-		_ = json.NewEncoder(w).Encode("Error creating the file")
-		return
-	}
-	defer dst.Close()
-	if _, err := io.Copy(dst, picture); err != nil {
-		_ = json.NewEncoder(w).Encode("Error copying the file")
-		return
-	}
-	// Respond with a success message
-	message = fmt.Sprintf("File %s uploaded successfully!", picHandler.Filename)
-	_ = json.NewEncoder(w).Encode(message)
 
 	photo, _ := json.Marshal(newPhoto)
 	err = rt.db.PostPhoto(string(photo))
