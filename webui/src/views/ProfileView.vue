@@ -19,7 +19,7 @@ export default {
             shownUser: this.$route.params.username,
             profileJson: {},
             description: '',
-            newUsername: '',    
+            newUsername: '',
 		}
 	},
 
@@ -237,7 +237,7 @@ export default {
     watch: {
         '$route'(to, from) {
             // Check if the route has changed to '/users/:username'
-            if (to.path.startsWith('/users/')) {
+            if (to.path.startsWith('/users/') && to.params.username != this.shownUser) {
                 this.shownUser = to.params.username;
                 this.loadProfile(this.shownUser);
             }
