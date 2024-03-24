@@ -294,16 +294,16 @@ export default {
                     </div>
                 </div>
             </div>
-            <div class="vertical-line"></div>
             <div v-if="shownUser == this.username" class="user-actions-container">
                 <div class="new-post">
                     <h3>New Post</h3>
                     <form id="post-form" @submit.prevent="newPost">
+                        
                         Picture: <input type="file" v-on:change="fileUpload" /><br />
                         Description: <input type="text" v-model="description" /><br />
                         <br>
                         <div class="btn-group me-2">
-                            <button type="button" class="btn btn-sm btn-outline-primary" @click="newPost(description, picture)">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" @click="newPost(description, picture)">
                                 New Post
                             </button>
                         </div>
@@ -313,7 +313,7 @@ export default {
                 <div class="change-username">
                     <form>
                         New Username: <input type="text" v-model="newUsername" /><br />
-                        <button type="button" @click="changeUsername(newUsername)">Change Username</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" @click="changeUsername(newUsername)">Change Username</button>
                     </form>
                 </div>
             </div>
