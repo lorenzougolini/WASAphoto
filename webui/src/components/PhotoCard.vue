@@ -60,6 +60,20 @@ export default {
             }
         },
 
+        isCommented() {
+            if (!this.photo.Comments) {
+                return false;
+            }
+
+            for (let i = 0; i < this.photo.Comments.length; i++) {
+                const comment = this.photo.Comments[i]; 
+                if (comment.Username === sessionStorage.getItem("username")) {
+                    return true;
+                }
+            }
+            return false;
+        },
+
         toggleComments() {
             this.showComments = !this.showComments; 
         },
@@ -198,11 +212,13 @@ export default {
             <p>{{ photo.Description }}</p>
         </div>
         <div class="like-comment-div">
-            <div class="btn-group" role="group" aria-label="Basic example">
-                <button class="btn btn-sm" :class="{'btn-danger': isLiked.liked, 'btn-outline-danger': !isLiked.liked }" @click="toggleLike()">
+            <div class="btn-group">
+                <button @click="toggleLike" :class="{ 'btn': true, 'btn-danger': this.isLiked().liked, 'btn-outline-danger': !this.isLiked().liked }">
                     Likes: {{ likesCount }}
                 </button>
-                <button class="btn btn-sm btn-outline-primary" @click="toggleComments()">View comments: {{ commentCount }}</button>
+                <button @click="toggleComments" :class="{ 'btn': true, 'btn-primary': this.isCommented(), 'btn-outline-primary': !this.isCommented() }">
+                    View comments: {{ commentCount }}
+                </button>
             </div>
             <div v-show="showComments" class="comment-section">
                 <div v-for="comment in photo.Comments" :key="comment.CommentID" class="comment">
@@ -262,13 +278,11 @@ export default {
 }
 
 .delete-comment {
-    margin-left: 10px; /* Adjust as needed */
+    margin-left: 10px;
 }
 
 .delete-comment button {
     padding: 0;
-    background: none;
-    border: none;
     cursor: pointer;
 }
 
@@ -296,7 +310,6 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center; 
-    /* border: 1px solid grey; */
     border-radius: 5px;
 }
 
@@ -309,4 +322,5 @@ export default {
     display: flex;
     justify-content: flex-end;
 }
+
 </style>
