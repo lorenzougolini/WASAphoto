@@ -22,12 +22,6 @@ export default {
 				sessionStorage.setItem("username", response.data.Username),
 				sessionStorage.setItem("logged", true),
 				
-				// this.$router.replace("/users/" + sessionStorage.getItem("username"), { 
-				// 	headers: {
-				// 		'Authorization': sessionStorage.getItem("userid"),
-				// 	}
-				// });
-				
 				this.$router.replace("/stream", { 
 					headers: {
 						'Authorization': sessionStorage.getItem("userid"),

@@ -1,8 +1,6 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import { user } from './stores/user';
-</script>
 <script>
+import { RouterLink, RouterView } from 'vue-router'
+
 export default {
 
 	data: function() {
@@ -12,11 +10,12 @@ export default {
 		}
 	},
 	
-	methods: {
+	computed: {
 		buildProfileLink() {
 			return "/users/" + sessionStorage.getItem("username");
 		},
-	}
+	},
+	
 }
 </script>
 
@@ -45,7 +44,7 @@ export default {
 								</RouterLink>
 							</li>
 							<li class="nav-item">
-								<RouterLink :to="buildProfileLink()" class="nav-link">
+								<RouterLink :to="buildProfileLink" class="nav-link">
 									<svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
 									Profile
 								</RouterLink>

@@ -234,6 +234,16 @@ export default {
         }
     },
 
+    watch: {
+        '$route'(to, from) {
+            // Check if the route has changed to '/users/:username'
+            if (to.path.startsWith('/users/')) {
+                this.shownUser = to.params.username;
+                this.loadProfile(this.shownUser);
+            }
+        }
+    },
+
 	mounted() {
 		this.loadProfile(this.shownUser)
 	}
@@ -247,7 +257,7 @@ export default {
         class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h2>Profile page</h2>
         <div class="d-flex align-items-center">
-            <SearchBar @search-user="loadProfile(this.shownUser)"/>
+            <SearchBar />
 			</div>
 			<div class="btn-toolbar mb-2 mb-md-0">
 				<div class="btn-group me-2">

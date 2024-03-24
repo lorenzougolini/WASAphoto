@@ -2,8 +2,6 @@
 
 export default {
 
-    emits: ['search-user'],
-
     data: function() {
         return {
             searchUser: '',
@@ -22,6 +20,8 @@ export default {
 					}
 				});
 
+                this.searchUser = '';
+                
             } catch (e) {
                 this.errormsg = e.toString();
             }

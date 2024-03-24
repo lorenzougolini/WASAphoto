@@ -22,6 +22,7 @@ export default {
             errormsg: null,
             showComments: false,
             comment: '',
+            imageUrl: '',
         }
     },
 
@@ -153,7 +154,6 @@ export default {
             this.loading = false;
         },
 
-        
     },
 
     computed: {
@@ -173,6 +173,7 @@ export default {
             return this.photo.Author === sessionStorage.getItem("username");
         },
     },
+
 }
 </script>
 <template>
@@ -187,7 +188,7 @@ export default {
             </div>
         </div>
         <div class="image-container">
-            <img :src="photo.File">
+            <img :src="this.imageUrl" alt="Image not loaded" />
         </div>
         <div class="descdate-div">
             <br>

@@ -22,6 +22,7 @@ export default {
 		async loadStream() {
 			this.loading = true;
 			this.errormsg = null;
+			
 			try {
 				let response = await this.$axios.get("/stream", {
 					headers: {
