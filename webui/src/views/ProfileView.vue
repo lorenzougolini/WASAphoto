@@ -13,32 +13,54 @@ export default {
 		return {
 			errormsg: null,
 			loading: false,
+
             username: sessionStorage.getItem("username"),
             userid: sessionStorage.getItem("userid"),
             logged: sessionStorage.getItem("logged"),
-            shownUser: this.$route.params.username,
-            profileJson: {},
+            
+            isOwner: false,
+
+            pathUser: this.$route.params.username,
+            
+            profileData: {},
+            profilePhotos: [],
+            
             description: '',
             newUsername: '',
 		}
 	},
 
 	methods: {
-		async loadProfile(shownUser) {
+		async loadProfile(pathUser) {
 			this.loading = true;
 			this.errormsg = null;
             try {
 
-                let response = await this.$axios.get("/users/" + shownUser, {
+                let response = await this.$axios.get("/users/" + pathUser, {
                     headers: {
                         'Authorization': this.userid,
                     }
                 });
 
-                this.profileJson = response.data;
+                const profile = response.data;
+
+                this.profileData = {
+                    Username: profile.Username, 
+                    Followers: profile.Followers, 
+                    Following: profile.Following,
+                    Banned: profile.Banned
+                };
+
+                this.profilePhotos = profile.Posts;
+                
+                if (this.profileData.Username === this.username) {
+                    this.isOwner = true;
+                } else {
+                    this.isOwner = false;
+                }
 
             } catch (e) {
-                this.errormsg = e.response.data;
+                this.errormsg = e.toString();
             }
             this.loading = false;
 		},
@@ -59,6 +81,7 @@ export default {
                         "Content-Type": "multipart/form-data"
                     }
                 });
+
             } catch (e) {
                 this.errormsg = e.toString();
             }
@@ -82,11 +105,14 @@ export default {
                         'Authorization': this.userid,
                     }
                 });
+                
+                console.log("Post deleted!");
+
             } catch (e) {
                 this.errormsg = e.toString();
             }
+
             this.loading = false;
-            console.log("Post deleted!");
             this.loadProfile(this.username);
         },
 
@@ -101,14 +127,13 @@ export default {
                     }
                 });
 
-                console.log(response.data.Username);
                 sessionStorage.setItem("username", response.data.Username);
                 
                 console.log("Username changed!");
-                this.shownUser = response.data.Username;
+                this.pathUser = response.data.Username;
                 this.username = response.data.Username;
                 this.$router.push("/users/" + response.data.Username);
-                this.loadProfile(this.shownUser);
+                this.loadProfile(this.pathUser);
 
             } catch (e) {
                 this.errormsg = e.toString();
@@ -121,17 +146,19 @@ export default {
             this.errormsg = null;
             
             try {        
-                await this.$axios.put("/users/" + this.username + "/followers/" + this.shownUser, null, {
+                await this.$axios.put("/users/" + this.username + "/followers/" + this.pathUser, null, {
                     headers: {
                         'Authorization': this.userid,
                     }
                 });
+                
                 console.log("User followed!");
+            
             } catch (e) {
                 this.errormsg = e.toString();
             }
             this.loading = false;
-            this.loadProfile(this.shownUser);
+            this.loadProfile(this.pathUser);
         },
 
         async unfollowUser() {
@@ -139,17 +166,19 @@ export default {
             this.errormsg = null;
             
             try {        
-                await this.$axios.delete("/users/" + this.username + "/followers/" + this.shownUser, {
+                await this.$axios.delete("/users/" + this.username + "/followers/" + this.pathUser, {
                     headers: {
                         'Authorization': this.userid,
                     }
                 });
+
+                console.log("User unfollowed!");
+            
             } catch (e) {
                 this.errormsg = e.toString();
             }
             this.loading = false;
-            console.log("User unfollowed!");
-            this.loadProfile(this.shownUser);            
+            this.loadProfile(this.pathUser);            
         },
 
         async banUser() {
@@ -157,17 +186,19 @@ export default {
             this.errormsg = null;
             
             try {        
-                await this.$axios.put("/users/" + this.username + "/banned/" + this.shownUser, null, {
+                await this.$axios.put("/users/" + this.username + "/banned/" + this.pathUser, null, {
                     headers: {
                         'Authorization': this.userid,
                     }
                 });
+                
+                console.log("User banned!");
+
             } catch (e) {
                 this.errormsg = e.toString();
             }
             this.loading = false;
-            console.log("User banned!");
-            this.loadProfile(this.shownUser);
+            this.loadProfile(this.pathUser);
         },
         
         async unbanUser() {
@@ -175,17 +206,19 @@ export default {
             this.errormsg = null;
             
             try {        
-                await this.$axios.delete("/users/" + this.username + "/banned/" + this.shownUser, {
+                await this.$axios.delete("/users/" + this.username + "/banned/" + this.pathUser, {
                     headers: {
                         'Authorization': this.userid,
                     }
                 });
+                
+                console.log("User unbanned!");
+            
             } catch (e) {
                 this.errormsg = e.toString();
             }
             this.loading = false;
-            console.log("User unbanned!");
-            this.loadProfile(this.shownUser);
+            this.loadProfile(this.pathUser);
         },
         
         fileUpload(event) {
@@ -195,57 +228,58 @@ export default {
 
         followedByYou() {
             try {
-                var followed = this.profileJson.Followers.Usernames.includes(this.username);
+                var followed = this.profileData.Followers.Usernames.includes(this.username);
             } catch (e) {
                 var followed = false;
             }
             return followed;
         },
+
+        updatePhoto(updatedPhoto) {
+            const idx = this.profilePhotos.findIndex((photo) => photo.PhotoID === updatedPhoto.PhotoID);
+            if (idx !== -1) {
+                this.profilePhotos[idx] = updatedPhoto;
+            }
+        }
+
 	},
     
     computed: {
         numberOfPosts() {
-            if (this.profileJson.Posts){
-                return this.profileJson.Posts.length
+            if (this.profilePhotos){
+                return this.profilePhotos.length
             } else {
                 return 0;
             }
         },
         numberOfFollowers() {
-            if (this.profileJson.Followers){
-                return this.profileJson.Followers.NumberOfFollowers
+            if (this.profileData.Followers){
+                return this.profileData.Followers.NumberOfFollowers
             } else {
                 return 0;
             }
         },
         numberOfFollowing() {
-            if (this.profileJson.Following){
-                return this.profileJson.Following.NumberOfFollowing
+            if (this.profileData.Following){
+                return this.profileData.Following.NumberOfFollowing
             } else {
                 return 0;
             }
         },
-        profilePhotos() {
-            if (this.profileJson.Posts){
-                return this.profileJson.Posts
-            } else {
-                return [];
-            }
-        }
     },
 
     watch: {
-        '$route'(to, from) {
-            // Check if the route has changed to '/users/:username'
-            if (to.path.startsWith('/users/') && to.params.username != this.shownUser) {
-                this.shownUser = to.params.username;
-                this.loadProfile(this.shownUser);
+        '$route'(to) {
+
+            if (to.path.startsWith('/users/') && to.params.username != this.pathUser) {
+                this.pathUser = to.params.username;
+                this.loadProfile(this.pathUser);
             }
         }
     },
 
 	mounted() {
-		this.loadProfile(this.shownUser)
+		this.loadProfile(this.pathUser)
 	}
 }
 </script>
@@ -261,7 +295,7 @@ export default {
 			</div>
 			<div class="btn-toolbar mb-2 mb-md-0">
 				<div class="btn-group me-2">
-					<button type="button" class="btn btn-sm btn-outline-secondary" @click="loadProfile(shownUser)">
+					<button type="button" class="btn btn-sm btn-outline-secondary" @click="loadProfile(pathUser)">
 						Refresh
 					</button>
 				</div>
@@ -274,7 +308,7 @@ export default {
             <div class="info-photo-container">
                 <div class="user-info">
                     <div class="user-name">
-                        <h1>{{ shownUser }}</h1>
+                        <h1>{{ pathUser }}</h1>
                     </div>
                     <div class="user-stats">
                         <p>Post: {{ numberOfPosts }}</p>
@@ -285,19 +319,22 @@ export default {
 
                 <hr>
 
-                <div v-if="this.profileJson.Posts" class="horizontal-photo-container">
+                <div v-if="this.profilePhotos" class="horizontal-photo-container">
                     <div v-for="photo in this.profilePhotos" :key="photo.PhotoID" class="horizontal-photo-div">
 
-                        <PhotoCard @delete-post="deletePost(photo.PhotoID)"
-                            :photo="photo"/>
+                        <PhotoCard 
+                            :photo="photo"
+                            @delete-post="deletePost(photo.PhotoID)"
+                            @update-photo="updatePhoto"
+                            />
 
                     </div>
                 </div>
             </div>
-            <div v-if="shownUser == this.username" class="user-actions-container">
+            <div v-if="this.isOwner" class="user-actions-container">
                 <div class="new-post">
                     <h3>New Post</h3>
-                    <form id="post-form" @submit.prevent="newPost">
+                    <form id="post-form" @submit.prevent="newPost(description, picture)">
                         
                         Picture: <input type="file" v-on:change="fileUpload" /><br />
                         Description: <input type="text" v-model="description" /><br />
@@ -318,7 +355,7 @@ export default {
                 </div>
             </div>
             <div v-else class="button-container">
-                <div v-if="this.profileJson.Followers">
+                <div v-if="this.profileData.Followers">
                     <div v-if="followedByYou()">
                         <button id="unfollow-user-button" class="btn btn-sm btn-outline-primary" @click="unfollowUser()">Unfollow</button>
                     </div>
@@ -326,7 +363,7 @@ export default {
                         <button id="follow-user-button" class="btn btn-sm btn-outline-primary" @click="followUser()">Follow</button>
                     </div>
                 </div>
-                <div v-if="this.profileJson.Banned">
+                <div v-if="this.profileData.Banned">
                     <button id="unfollow-user-button" class="btn btn-sm btn-outline-primary" @click="unbanUser()">Unban</button>
                 </div>
                 <div v-else>

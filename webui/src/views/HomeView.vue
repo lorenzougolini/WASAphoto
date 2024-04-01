@@ -15,7 +15,7 @@ export default {
 			username: sessionStorage.getItem("username"),
             userid: sessionStorage.getItem("userid"),
 			logged: sessionStorage.getItem("logged"),
-			streamJson: {},
+			photos: null,
 		}
 	},
 	methods: {
@@ -30,9 +30,9 @@ export default {
 					}
 				});
 
-				this.streamJson = response.data;
-				if (this.streamJson.Posts) {
-					this.streamJson.Posts.sort((a, b) => b.DateAndTime - a.DateAndTime);
+				this.photos = response.data.Posts;
+				if (this.photos) {
+					this.photos.sort((a, b) => b.DateAndTime - a.DateAndTime);
 				}
 
 			} catch (e) {
@@ -40,6 +40,13 @@ export default {
 			}
 			this.loading = false;
 		},
+
+		updatePhoto(updatedPhoto) {
+            const idx = this.photos.findIndex((photo) => photo.PhotoID === updatedPhoto.PhotoID);
+            if (idx !== -1) {
+                this.photos[idx] = updatedPhoto;
+            }
+        },
 	},
 
 	mounted() {
@@ -74,9 +81,10 @@ export default {
 			<LoadingSpinner :loading="loading" />
 		</div>
 		<div class="stream-container">
-			<div v-for="photo in this.streamJson.Posts" :key="photo.PhotoID">
+			<div v-for="photo in this.photos" :key="photo.PhotoID">
 				<PhotoCard 
 					:photo="photo"
+					@update-photo="updatePhoto"
 					/>
 				<br>
 			</div>

@@ -7,7 +7,7 @@ export default {
         RouterLink,
     },
 
-    emits: ['delete-post'],
+    emits: ['delete-post', 'update-photo'],
 
     props:{
         photo: {
@@ -45,7 +45,6 @@ export default {
             for (let i = 0; i < this.photo.Likes.length; i++) {
                 const like = this.photo.Likes[i]; 
                 if (like.Username === sessionStorage.getItem("username")) {
-                    console.log("the likeid is: " + like.LikeID);
                     return {"liked": true, "likeid": like.LikeID};
                 }
             }
@@ -93,7 +92,8 @@ export default {
                     }
                 });
 
-                this.photo.Likes = response.data.Likes;
+                this.$emit('update-photo', response.data);
+                // this.photo.Likes = response.data.Likes;
 
                 console.log("Post liked!");
 
@@ -113,7 +113,8 @@ export default {
                     }
                 });
 
-                this.photo.Likes = response.data.Likes;
+                this.$emit('update-photo', response.data);
+                // this.photo.Likes = response.data.Likes;
 
                 console.log("Post disliked!");
 
@@ -137,6 +138,7 @@ export default {
                     }
                 });
 
+                this.$emit('update-photo', response.data);
                 this.photo.Comments = response.data.Comments;
 
                 this.comment = '';
@@ -152,13 +154,16 @@ export default {
         async uncommentPhoto(commentid) {
             try {
 
-                await this.$axios.delete("/photos/" + this.photo.PhotoID + "/comments/" + commentid , {
+                let response = await this.$axios.delete("/photos/" + this.photo.PhotoID + "/comments/" + commentid , {
                     headers: {
                         'Authorization': sessionStorage.getItem("userid"),
                     }
                 });
 
-                this.photo.Comments = this.photo.Comments.filter(comment => comment.CommentID !== commentid);
+                console.log(response.data);
+
+                this.$emit('update-photo', response.data);
+                // this.photo.Comments = this.photo.Comments.filter(comment => comment.CommentID !== commentid);
 
                 console.log("Comment deleted!");
 
