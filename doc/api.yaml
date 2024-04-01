@@ -90,7 +90,6 @@ components:
           format: binary
           minLength: 67
           maxLength: 1000000000
-          maximum: 3145728
         dateAndTime:
           description: The date and hour when the image was uploaded
           type: string
