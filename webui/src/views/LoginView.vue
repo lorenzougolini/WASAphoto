@@ -16,7 +16,7 @@ export default {
 			this.errormsg = null; 
 			
 			try {
-				let response = await this.$axios.post("/session?username=" + this.loggingUsername);
+				let response = await this.$axios.post(`/session?username=${this.loggingUsername}`);
 				
 				sessionStorage.setItem("userid", response.data.UserID),
 				sessionStorage.setItem("username", response.data.Username),

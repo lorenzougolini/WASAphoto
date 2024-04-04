@@ -93,7 +93,6 @@ export default {
                 });
 
                 this.$emit('update-photo', response.data);
-                // this.photo.Likes = response.data.Likes;
 
                 console.log("Post liked!");
 
@@ -114,7 +113,6 @@ export default {
                 });
 
                 this.$emit('update-photo', response.data);
-                // this.photo.Likes = response.data.Likes;
 
                 console.log("Post disliked!");
 
@@ -139,7 +137,6 @@ export default {
                 });
 
                 this.$emit('update-photo', response.data);
-                this.photo.Comments = response.data.Comments;
 
                 this.comment = '';
                 console.log("Comment posted!");
@@ -163,7 +160,6 @@ export default {
                 console.log(response.data);
 
                 this.$emit('update-photo', response.data);
-                // this.photo.Comments = this.photo.Comments.filter(comment => comment.CommentID !== commentid);
 
                 console.log("Comment deleted!");
 
@@ -199,7 +195,9 @@ export default {
 }
 </script>
 <template>
+
     <div class="photo-card">
+
         <div class="author-container">
             <div>
                 <RouterLink :to="buildUserLink()" class="nav-link">
@@ -209,14 +207,18 @@ export default {
                 <p class="photo-date-rigth">{{ formatDateFromUnix(photo.DateAndTime) }}</p>
             </div>
         </div>
+
         <div class="image-container">
             <img :src="decodedPhoto" alt="Image not loaded" />
         </div>
+
         <div class="descdate-div">
             <br>
             <p>{{ photo.Description }}</p>
         </div>
+
         <div class="like-comment-div">
+
             <div class="btn-group">
                 <button @click="toggleLike" :class="{ 'btn': true, 'btn-danger': this.isLiked().liked, 'btn-outline-danger': !this.isLiked().liked }">
                     Likes: {{ likesCount }}
@@ -225,7 +227,9 @@ export default {
                     View comments: {{ commentCount }}
                 </button>
             </div>
+
             <div v-show="showComments" class="comment-section">
+
                 <div v-for="comment in photo.Comments" :key="comment.CommentID" class="comment">
                     <div class="comment-text">
                         <p><b>{{ comment.Username }}</b>: {{ comment.CommentText }}</p>
@@ -238,15 +242,20 @@ export default {
                         </button>
                     </div>
                 </div>
+
                 <div>
                     <input id="comment-input" type="text" v-model="comment" />
                     <button class="btn btn-sm btn-outline-primary" @click="commentPhoto()">Comment</button>
                 </div>
+                
             </div>
+
         </div>
+
         <div v-show="canDeletePhoto" class="photo-delete">
             <button class="btn btn-sm btn-outline-danger" @click="$emit('delete-post')">Delete</button>
         </div>
+
     </div>
 </template>
 
