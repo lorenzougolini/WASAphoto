@@ -53,6 +53,13 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 
+	err = rt.db.UnfollowUser(bannedUser.UserID, token)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(err)
+		return
+	}
+
 	message = bannedUser.Username + " succesfully banned!"
 	w.WriteHeader(http.StatusCreated)
 	_ = json.NewEncoder(w).Encode(message)
