@@ -269,7 +269,16 @@ export default {
     },
 
     watch: {
-        '$route'(to) {
+        '$route'(to, from) {
+
+            if (from.path.startsWith('/profile') && to.path.startsWith('/users/')) {
+                this.loadProfile(to.params.username);
+            }
+
+            if (from.path.startsWith('/users/') && to.path.startsWith('/profile')) {
+                this.pathUser = this.username;
+                this.loadProfile(this.username);
+            }
 
             if (to.path.startsWith('/users/') && to.params.username != this.pathUser) {
                 this.pathUser = to.params.username;
@@ -279,7 +288,11 @@ export default {
     },
 
 	mounted() {
-		this.loadProfile(this.pathUser)
+        if (this.pathUser){
+            this.loadProfile(this.pathUser)
+        } else {
+            this.loadProfile(this.username)
+        }
 	}
 }
 </script>
@@ -308,7 +321,7 @@ export default {
             <div class="info-photo-container">
                 <div class="user-info">
                     <div class="user-name">
-                        <h1>{{ pathUser }}</h1>
+                        <h1>{{ pathUser || this.username }}</h1>
                     </div>
                     <div class="user-stats">
                         <p>Post: {{ numberOfPosts }}</p>

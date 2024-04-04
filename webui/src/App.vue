@@ -5,17 +5,26 @@ export default {
 
 	data: function() {
 		return {
-			username: sessionStorage.getItem("username"),
-			logged: sessionStorage.getItem("logged"),
+			isLogged: false,
+			// username: sessionStorage.getItem("username"),
+			// logged: sessionStorage.getItem("logged"),
 		}
 	},
-	
+
 	computed: {
 		buildProfileLink() {
-			return "/users/" + sessionStorage.getItem("username");
+			const username = sessionStorage.getItem("username");
+			return username ? "/users/" + username : "";
 		},
 	},
-	
+
+	mounted() {
+		if (sessionStorage.getItem('logged')) {
+			this.isLogged = true;
+		} else {
+			this.$router.replace("/session");
+		}
+	}
 }
 </script>
 
@@ -44,7 +53,7 @@ export default {
 								</RouterLink>
 							</li>
 							<li class="nav-item">
-								<RouterLink :to="buildProfileLink" class="nav-link">
+								<RouterLink to="/profile" class="nav-link">
 									<svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
 									Profile
 								</RouterLink>
