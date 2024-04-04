@@ -5,25 +5,14 @@ export default {
 
 	data: function() {
 		return {
-			isLogged: false,
-			// username: sessionStorage.getItem("username"),
-			// logged: sessionStorage.getItem("logged"),
+			logged: false,
 		}
 	},
 
-	computed: {
-		buildProfileLink() {
-			const username = sessionStorage.getItem("username");
-			return username ? "/users/" + username : "";
+	methods: {
+		toggleLogged() {
+			this.logged = true;
 		},
-	},
-
-	mounted() {
-		if (sessionStorage.getItem('logged')) {
-			this.isLogged = true;
-		} else {
-			this.$router.replace("/session");
-		}
 	}
 }
 </script>
@@ -39,7 +28,7 @@ export default {
 
 	<div class="container-fluid">
 		<div class="row">
-			<!-- <div v-if="this.logged"> -->
+			<!-- <div v-show="this.logged"> -->
 				<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
 					<div class="position-sticky pt-3 sidebar-sticky">
 						<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
