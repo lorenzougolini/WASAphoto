@@ -404,6 +404,7 @@ export default {
 }
 .horizontal-photo-div {
     margin-right: 10px;
+    margin-bottom: 20px;
 }
 .user-info {
     display: flex;
