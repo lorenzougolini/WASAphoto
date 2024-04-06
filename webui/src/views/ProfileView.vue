@@ -24,9 +24,11 @@ export default {
             
             profileData: {},
             profilePhotos: [],
+            userNotFound: false,
             
             description: '',
             newUsername: '',
+            usernameTakenBanner: false,
 		}
 	},
 
@@ -60,7 +62,11 @@ export default {
                 }
 
             } catch (e) {
-                this.errormsg = e.toString();
+                if (e.response && e.response.status === 404) {
+                    this.userNotFound = true;                    
+                } else {
+                    this.errormsg = e.toString();
+                }
             }
             this.loading = false;
 		},
@@ -121,7 +127,7 @@ export default {
             this.errormsg = null;
             
             try {        
-                let response = await this.$axios.put("/users/" + this.username, newUsername, {
+                let response = await this.$axios.put(`/users/${this.username}`, newUsername, {
                     headers: {
                         'Authorization': this.userid,
                     }
@@ -136,7 +142,15 @@ export default {
                 this.loadProfile(this.pathUser);
 
             } catch (e) {
-                this.errormsg = e.toString();
+                if (e.response && e.response.status === 400) {
+                    this.usernameTakenBanner = true;
+                    setTimeout(() => {
+                        this.usernameTakenBanner = false;
+                    }, 5000);
+                    
+                } else {
+                    this.errormsg = e.toString();
+                }
             }
             this.loading = false;
         },
@@ -300,8 +314,7 @@ export default {
 <template>
     <!-- <h1 v-if="!this.logged" class="positive-banner" style="margin-top: 40px;">Please log-in to see profile contents</h1> -->
     <div>
-        <div
-        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h2>Profile page</h2>
         <div class="d-flex align-items-center">
             <SearchBar />
@@ -317,6 +330,9 @@ export default {
         
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
         <div v-else class="profile-container">
+            <div v-if="userNotFound" class="alert alert-warning" role="alert">
+                User not found!
+            </div>
             <LoadingSpinner :loading="loading" />
             <div class="info-photo-container">
                 <div class="user-info">
@@ -361,10 +377,13 @@ export default {
                 </div>
                 <hr>
                 <div class="change-username">
-                    <form>
+                    <form id="username-form" @submit.prevent="changeUsername(newUsername)">
                         New Username: <input type="text" v-model="newUsername" /><br />
                         <button type="button" class="btn btn-sm btn-outline-secondary" @click="changeUsername(newUsername)">Change Username</button>
                     </form>
+                    <div v-show="usernameTakenBanner" class="alert alert-warning" role="alert">
+                        Username is already taken!
+                    </div>
                 </div>
             </div>
             <div v-else class="button-container">
