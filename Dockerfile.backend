@@ -1,0 +1,17 @@
+# firts image "builder"
+FROM golang:1.19.1 AS builder
+
+WORKDIR /src/
+COPY . .
+
+RUN go build -o /app/webapi ./cmd/webapi
+
+# final image
+FROM debian:bookworm
+EXPOSE 3000
+
+# copy executable fron builder image
+WORKDIR /app/
+COPY --from=builder /app/webapi ./
+
+CMD ["/app/webapi"]
