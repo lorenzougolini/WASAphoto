@@ -25,6 +25,7 @@ export default {
             profileData: {},
             profilePhotos: [],
             userNotFound: false,
+            userBanned: false,
             
             description: '',
             newUsername: '',
@@ -43,7 +44,9 @@ export default {
                         'Authorization': this.userid,
                     }
                 });
-
+                
+                this.userNotFound = false;
+                this.userBanned = false;
                 const profile = response.data;
 
                 this.profileData = {
@@ -63,7 +66,9 @@ export default {
 
             } catch (e) {
                 if (e.response && e.response.status === 404) {
-                    this.userNotFound = true;                    
+                    this.userNotFound = true;
+                } else if (e.response && e.response.status === 400){
+                    this.userBanned = true;
                 } else {
                     this.errormsg = e.toString();
                 }
@@ -328,11 +333,14 @@ export default {
 			</div>
 		</div>
         
-		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
+        <ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
+        <div v-else-if="userNotFound" class="alert alert-warning" role="alert">
+           User not found!
+        </div> 
+        <div v-else-if="userBanned" class="alert alert-warning" role="alert">
+           It seems like you have been banned!
+        </div> 
         <div v-else class="profile-container">
-            <div v-if="userNotFound" class="alert alert-warning" role="alert">
-                User not found!
-            </div>
             <LoadingSpinner :loading="loading" />
             <div class="info-photo-container">
                 <div class="user-info">
