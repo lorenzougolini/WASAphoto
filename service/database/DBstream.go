@@ -23,7 +23,7 @@ func (db *appdbimpl) GetStream(userid string) (Stream, error) {
 		}
 
 		// get photo data for each followed user
-		photoRows, err := db.c.Query("SELECT photoid FROM photos WHERE authorid = ? ORDER BY dateAndTime DESC", followedid)
+		photoRows, err := db.c.Query("SELECT photoid FROM photos WHERE authorid = ? AND authorid NOT IN ( SELECT bannerid FROM bans WHERE bannedid = ? ) ORDER BY dateAndTime DESC;", followedid, userid)
 		if err != nil {
 			return stream, fmt.Errorf(errRetrievingStream, err)
 		}
