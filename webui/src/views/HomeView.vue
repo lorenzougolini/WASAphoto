@@ -12,10 +12,13 @@ export default {
 		return {
 			errormsg: null,
 			loading: false,
+			
 			username: sessionStorage.getItem("username"),
             userid: sessionStorage.getItem("userid"),
 			logged: sessionStorage.getItem("logged"),
+			
 			photos: null,
+			emptyStreamBanner: false,
 		}
 	},
 	methods: {
@@ -30,9 +33,12 @@ export default {
 					}
 				});
 
+				this.emptyStreamBanner = false;
 				this.photos = response.data.Posts;
 				if (this.photos) {
 					this.photos.sort((a, b) => b.DateAndTime - a.DateAndTime);
+				} else {
+					this.emptyStreamBanner = true;
 				}
 
 			} catch (e) {
@@ -76,7 +82,9 @@ export default {
 		</div>
 
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
-
+		<div v-show="emptyStreamBanner" class="alert alert-warning" role="alert">
+			Wow, so empty! Start following users!
+		</div>
 		<div>
 			<LoadingSpinner :loading="loading" />
 		</div>
