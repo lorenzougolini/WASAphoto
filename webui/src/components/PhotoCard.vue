@@ -230,19 +230,20 @@ export default {
 
             <div v-show="showComments" class="comment-section">
 
-                <div v-for="comment in photo.Comments" :key="comment.CommentID" class="comment">
-                    <div class="comment-text">
-                        <p><b>{{ comment.Username }}</b>: {{ comment.CommentText }}</p>
-                        <hr/>
-                    </div>
-                    
-                    <div v-show="canDeleteComment(comment)" class="delete-comment">
-                        <button class="btn btn-sm" @click="uncommentPhoto(comment.CommentID)">
-                            <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#trash"/></svg>
-                        </button>
+                <div class="comments">
+                    <div v-for="comment in photo.Comments" :key="comment.CommentID" class="comment">
+                        <div class="comment-text">
+                            <p><b>{{ comment.Username }}</b>: {{ comment.CommentText }}</p>
+                            <hr/>
+                        </div>
+                        
+                        <div v-show="canDeleteComment(comment)" class="delete-comment">
+                            <button class="btn btn-sm" @click="uncommentPhoto(comment.CommentID)">
+                                <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#trash"/></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
-
                 <div>
                     <input id="comment-input" type="text" v-model="comment" />
                     <button class="btn btn-sm btn-outline-primary" @click="commentPhoto()">Comment</button>
@@ -280,6 +281,12 @@ export default {
 
 .comment-section {
     margin-top: 10px;
+}
+.comments{
+    max-height: 150px; /* Set the maximum height for the scrollable area */
+    overflow-y: auto; /* Enable vertical scrolling */
+    border: 1px solid #ccc; /* Optional: Add a border for clarity */
+    padding: 10px; /* Optional: Add padding for spacing */
 }
 .comment {
     display: flex;
